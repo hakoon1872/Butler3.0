@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jarvis // Status</title>
+<style>
+:root{--bg:#070b12;--panel:#0e1624;--panel2:#0a101d;--border:#1e2d4a;--cyan:#38bdf8;--emerald:#10b981;--amber:#f59e0b;--rose:#f43f5e;--text:#e2e8f0;--muted:#94a3b8}
+*{box-sizing:border-box;font-family:'Inter',system-ui,sans-serif;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px 60px}
+.wrap{max-width:980px;margin:0 auto}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+header h1{font-size:20px;color:var(--cyan);letter-spacing:.08em}
+header .now{font-size:12px;color:var(--muted)}
+header .sp{flex:1}
+a.btn,button{background:var(--panel2);border:1px solid var(--border);color:var(--cyan);border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;text-decoration:none}
+a.btn:hover,button:hover{border-color:var(--cyan)}
+.banner{border-radius:10px;padding:12px 16px;font-size:13px;margin-bottom:14px;border:1px solid}
+.banner.good{background:rgba(16,185,129,.08);border-color:rgba(16,185,129,.4);color:var(--emerald)}
+.banner.warn{background:rgba(245,158,11,.07);border-color:rgba(245,158,11,.4);color:var(--amber)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.stat{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:14px 16px}
+.stat .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:6px}
+.stat .val{font-size:26px;font-weight:700;color:var(--cyan)}
+.stat .sub{font-size:11px;color:var(--muted);margin-top:4px}
+h2{font-size:13px;color:var(--cyan);text-transform:uppercase;letter-spacing:.08em;margin:22px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.course{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px}
+.course .top{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.course .code{font-weight:700;font-size:15px;color:var(--text)}
+.course .name{font-size:12px;color:var(--muted)}
+.course .grade{margin-left:auto;font-size:24px;font-weight:800;color:var(--cyan)}
+.course .nums{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+.course .say{font-size:13px;line-height:1.5;margin-bottom:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{font-size:11px;border-radius:99px;padding:3px 10px;border:1px solid}
+.chip.secured{color:var(--emerald);border-color:rgba(16,185,129,.5)}
+.chip.reachable{color:var(--amber);border-color:rgba(245,158,11,.5)}
+.chip.unreachable{color:var(--rose);border-color:rgba(244,63,94,.5)}
+.course .warn{font-size:12px;color:var(--amber);margin-top:8px}
+.list{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:6px 16px}
+.item{padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;display:flex;gap:10px;align-items:baseline}
+.item:last-child{border-bottom:none}
+.item .t{color:var(--muted);font-size:12px;white-space:nowrap}
+.item .tag{font-size:10.5px;color:var(--cyan);border:1px solid var(--border);border-radius:6px;padding:1px 7px;white-space:nowrap}
+.empty{color:var(--muted);font-size:13px;padding:12px 0}
+.state{font-size:12.5px;color:var(--muted);background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 16px;margin-top:18px;line-height:1.6}
+footer{margin-top:26px;font-size:11.5px;color:var(--muted);text-align:center;line-height:1.7}
+.err{color:var(--rose);font-size:13px;padding:20px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🎩 Jarvis // Status</h1>
+    <span class="now" id="now"></span>
+    <span class="sp"></span>
+    <a class="btn" href="/api/manifest" target="_blank">26 tools</a>
+    <a class="btn" href="/api/prompt" target="_blank">Wake prompt</a>
+    <button id="refresh">Refresh</button>
+  </header>
+  <div id="banners"></div>
+  <div class="cards" id="gpa"></div>
+  <h2>Grades — the truth, per course</h2>
+  <div id="courses"></div>
+  <h2>Today</h2>
+  <div class="list" id="today"></div>
+  <h2>Due within 48 hours</h2>
+  <div class="list" id="due"></div>
+  <div class="state" id="state"></div>
+  <footer id="foot"></footer>
+</div>
+<script>
+// R7 (audit): every dynamic string goes through textContent — raw HTML injection is never used.
+function el(tag, cls, text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e;}
+function stat(lbl,val,sub){const d=el('div','stat');d.appendChild(el('div','lbl',lbl));d.appendChild(el('div','val',val));if(sub)d.appendChild(el('div','sub',sub));return d;}
+function item(time,text,tag){const d=el('div','item');if(time)d.appendChild(el('span','t',time));d.appendChild(el('span',null,text));if(tag)d.appendChild(el('span','tag',tag));return d;}
+function clear(n){while(n.firstChild)n.removeChild(n.firstChild);}
+
+async function load(){
+  let d;
+  try{
+    const r=await fetch('/api/dashboard');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    d=await r.json();
+  }catch(e){
+    const c=document.getElementById('courses');clear(c);
+    c.appendChild(el('div','err','Could not reach Jarvis: '+e.message));return;
+  }
+  document.getElementById('now').textContent=d.now||'';
+
+  // banners: rescue + warnings
+  const B=document.getElementById('banners');clear(B);
+  if(d.rescue&&d.rescue.done){
+    const imp=d.rescue.imported||{};
+    const parts=Object.keys(imp).map(k=>imp[k]+' '+k).join(', ');
+    B.appendChild(el('div','banner good','✓ Old life rescued from '+d.rescue.source+': '+parts+'. Backups are in the backups/ folder.'));
+  }
+  const warns=[];
+  if(d.allocations&&d.allocations.ok&&!d.allocations.all_courses_valid){
+    d.allocations.courses.filter(c=>!c.ok).forEach(c=>warns.push(c.say));
+  }
+  if(Array.isArray(d.grades))d.grades.forEach(g=>{if(g.warning)warns.push(g.code+': '+g.warning);});
+  if(warns.length){const w=el('div','banner warn');w.textContent='⚠ '+warns.join('  ·  ');B.appendChild(w);}
+
+  // GPA cards
+  const G=document.getElementById('gpa');clear(G);
+  if(d.gpa&&d.gpa.ok){
+    G.appendChild(stat('Projected GPA',d.gpa.projected_gpa,'if expectations hold'));
+    G.appendChild(stat('Floor',d.gpa.floor_gpa,'zeros from here'));
+    G.appendChild(stat('Ceiling',d.gpa.ceiling_gpa,'perfect finish'));
+    if(d.gpa.target_gpa!=null)G.appendChild(stat('Target',d.gpa.target_gpa,d.gpa.say||''));
+  }else{
+    G.appendChild(stat('GPA','—',(d.gpa&&d.gpa.say)||'not configured'));
+  }
+
+  // courses
+  const C=document.getElementById('courses');clear(C);
+  const feas={};
+  if(d.feasibility&&d.feasibility.ok)d.feasibility.courses.forEach(c=>feas[c.code]=c);
+  if(Array.isArray(d.grades)&&d.grades.length){
+    d.grades.forEach(g=>{
+      const card=el('div','course');
+      const top=el('div','top');
+      top.appendChild(el('span','code',g.code));
+      top.appendChild(el('span','name',g.name||''));
+      top.appendChild(el('span','grade',g.projected_grade));
+      card.appendChild(top);
+      card.appendChild(el('div','nums','banked '+g.obtained_sum+' / '+g.max_total+'  ·  projected '+g.projected_pct+'%  ·  ceiling '+g.ceiling_pct+'% ('+g.ceiling_grade+')  ·  '+g.remaining_potential+' points still winnable'));
+      const f=feas[g.code];
+      if(f){
+        card.appendChild(el('div','say',f.say));
+        const chips=el('div','chips');
+        f.tiers.forEach(t=>{
+          let label=t.letter;
+          if(t.verdict==='reachable'&&t.required_pct_of_remaining!=null)label+=' · '+t.required_pct_of_remaining+'% left';
+          chips.appendChild(el('span','chip '+t.verdict,label));
+        });
+        card.appendChild(chips);
+      }
+      if(g.warning)card.appendChild(el('div','warn','⚠ '+g.warning));
+      C.appendChild(card);
+    });
+  }else{
+    C.appendChild(el('div','empty',(d.grades&&d.grades.say)||'No courses yet.'));
+  }
+
+  // today
+  const T=document.getElementById('today');clear(T);
+  const pic=d.today||{};
+  (pic.blocks||[]).forEach(b=>T.appendChild(item(b.start_time+'–'+b.end_time,b.type+(b.location?' @ '+b.location:'')+(b.course_focus?' · '+b.course_focus:''),'block')));
+  (pic.today_tasks||[]).forEach(t=>T.appendChild(item(t.assigned_window||'',t.title+(t.course_code?' ('+t.course_code+')':''),'task')));
+  if(pic.unslotted_count)T.appendChild(item('',pic.unslotted_count+' pending tasks have no slot yet — Jarvis will offer to schedule them.','needs slot'));
+  if(!T.childNodes.length)T.appendChild(el('div','empty','Nothing scheduled today.'));
+
+  // due soon
+  const D=document.getElementById('due');clear(D);
+  (pic.due_soon||[]).forEach(t=>D.appendChild(item((t.deadline_at||'').slice(0,16).replace('T',' '),t.title+(t.course_code?' ('+t.course_code+')':''),'due')));
+  if(!D.childNodes.length)D.appendChild(el('div','empty','Nothing due in the next 48 hours. Rare peace.'));
+
+  // state
+  const S=document.getElementById('state');
+  const s=d.state||{};
+  S.textContent='State ('+(s.age_minutes!=null?s.age_minutes+' min ago':'unknown')+'): '+(s.location||'?')+' · energy '+(s.energy||'?')+'/5 · hydration '+(s.hydration||'?')+'/5 · '+(s.fed?'fed':'hungry')+' · stress '+(s.stress||'?')+'/5 · doing: '+(s.current_activity||'?')+(s.is_stale?'  —  STALE: Jarvis will ask one fresh check-in question.':'');
+
+  document.getElementById('foot').textContent=(d.tools?d.tools.count:0)+' tools ready · voice arrives with the live layer (M3) · this page refreshes every 60s';
+}
+document.getElementById('refresh').addEventListener('click',load);
+load();
+setInterval(load,60000);
+</script>
+</body>
+</html>

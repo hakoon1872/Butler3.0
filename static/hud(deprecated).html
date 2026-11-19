@@ -1,0 +1,1890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jarvis // Night Desk</title>
+<style>
+/* ============ NIGHT DESK design system ============
+   ink field · brass livery · parchment text · cyan live · violet memory
+   serif display (butler's study) + mono instruments + system body */
+:root{
+  --ink:#0a0e17; --ink2:#0d1322; --panel:#111a2e; --panel2:#0c1424; --overlay:#16213a;
+  --line:rgba(201,162,39,.22); --line2:rgba(139,147,167,.16);
+  --brass:#c9a227; --brass2:#e3b341; --brassdim:rgba(201,162,39,.12);
+  --cyan:#22d3ee; --violet:#a78bfa; --emerald:#34d399; --amber:#fbbf24; --rose:#fb7185;
+  --parch:#ece5d8; --muted:#9aa3b8; --faint:#6b7488;
+  --serif:"Palatino Linotype",Palatino,"Iowan Old Style",Georgia,"Times New Roman",serif;
+  --mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r:14px; --topbar:60px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--ink);color:var(--parch);font-family:var(--body);font-size:14px;line-height:1.55;min-height:100vh;overflow-x:hidden}
+::selection{background:rgba(201,162,39,.35)}
+/* custom scrollbars — brass on ink, everywhere */
+*{scrollbar-width:thin;scrollbar-color:rgba(201,162,39,.45) rgba(13,19,34,.6)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:rgba(13,19,34,.6)}
+::-webkit-scrollbar-thumb{background:linear-gradient(180deg,rgba(201,162,39,.55),rgba(201,162,39,.3));border-radius:99px;border:2px solid var(--ink2)}
+::-webkit-scrollbar-thumb:hover{background:var(--brass2)}
+/* ambient layers */
+.bg{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.bg .lamp{position:absolute;top:-30vh;left:-15vw;width:75vw;height:80vh;background:radial-gradient(ellipse at center,rgba(227,179,65,.13),rgba(201,162,39,.05) 45%,transparent 70%);filter:blur(10px)}
+.bg .aur{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5}
+.bg .a1{width:55vw;height:55vw;top:20vh;right:-20vw;background:radial-gradient(circle,rgba(34,211,238,.10),transparent 65%);animation:drift1 46s ease-in-out infinite alternate}
+.bg .a2{width:48vw;height:48vw;bottom:-18vh;left:8vw;background:radial-gradient(circle,rgba(167,139,250,.09),transparent 65%);animation:drift2 58s ease-in-out infinite alternate}
+@keyframes drift1{to{transform:translate(-9vw,12vh) scale(1.15)}}
+@keyframes drift2{to{transform:translate(12vw,-9vh) scale(.9)}}
+.bg .grain{position:absolute;inset:0;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E")}
+.bg .vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,transparent 55%,rgba(4,6,12,.55))}
+/* topbar */
+header{position:fixed;top:0;left:0;right:0;height:var(--topbar);z-index:50;display:flex;align-items:center;gap:16px;padding:0 20px;background:rgba(10,14,23,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;gap:10px;white-space:nowrap}
+.brand .hat{font-size:22px;filter:drop-shadow(0 0 8px rgba(227,179,65,.5))}
+.brand h1{font-family:var(--serif);font-size:21px;font-weight:700;letter-spacing:.14em;color:var(--brass2)}
+.brand small{font-family:var(--mono);font-size:9.5px;letter-spacing:.22em;color:var(--faint);text-transform:uppercase}
+nav{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0}
+nav::-webkit-scrollbar{display:none}
+nav a{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:8px;position:relative;white-space:nowrap;transition:color .2s}
+nav a:hover{color:var(--parch)}
+nav a.active{color:var(--brass2)}
+nav a.active::after{content:"";position:absolute;left:12px;right:12px;bottom:2px;height:2px;background:linear-gradient(90deg,var(--brass),var(--brass2));border-radius:2px;box-shadow:0 0 8px rgba(227,179,65,.6)}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+#clock{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.badge{font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;padding:4px 10px;border-radius:99px;border:1px solid;white-space:nowrap}
+.badge.real{color:var(--emerald);border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.08)}
+.badge.rehearsal{color:var(--amber);border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.08)}
+.iconbtn{background:var(--panel2);border:1px solid var(--line2);color:var(--parch);width:36px;height:36px;border-radius:10px;cursor:pointer;font-size:15px;display:grid;place-items:center;transition:.2s}
+.iconbtn:hover{border-color:var(--brass);box-shadow:0 0 12px rgba(201,162,39,.25)}
+.iconbtn.off{color:var(--faint)}
+/* layout */
+main{max-width:1240px;margin:0 auto;padding:calc(var(--topbar) + 26px) 20px 90px}
+section{scroll-margin-top:calc(var(--topbar) + 16px);margin-bottom:56px}
+.sec-head{display:flex;align-items:baseline;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.sec-head h2{font-family:var(--serif);font-size:27px;font-weight:700;color:var(--parch);letter-spacing:.02em}
+.sec-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent);min-width:40px}
+.sec-head .kicker{font-family:var(--mono);font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:var(--brass)}
+.reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s ease}
+.reveal.in{opacity:1;transform:none}
+.card{background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line2);border-radius:var(--r);padding:18px;position:relative}
+.card.brassline{border-color:var(--line)}
+.card h3{font-family:var(--serif);font-size:16px;color:var(--brass2);margin-bottom:10px}
+.lbl{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+/* buttons & inputs */
+.btn{font-family:var(--mono);font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--parch);background:var(--overlay);border:1px solid var(--line2);border-radius:10px;padding:9px 16px;cursor:pointer;transition:.18s;white-space:nowrap}
+.btn:hover{border-color:var(--brass);box-shadow:0 0 14px rgba(201,162,39,.2);transform:translateY(-1px)}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:linear-gradient(135deg,var(--brass),#a8861f);color:#14100a;border-color:var(--brass2);font-weight:700}
+.btn.primary:hover{box-shadow:0 0 22px rgba(227,179,65,.45)}
+.btn.danger{color:var(--rose);border-color:rgba(251,113,133,.4)}
+.btn.danger:hover{border-color:var(--rose);box-shadow:0 0 14px rgba(251,113,133,.25)}
+.btn.good{color:var(--emerald);border-color:rgba(52,211,153,.4)}
+.btn.sm{padding:5px 10px;font-size:10px;border-radius:8px}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+input,select,textarea{font-family:var(--body);font-size:13px;color:var(--parch);background:var(--panel2);border:1px solid var(--line2);border-radius:9px;padding:8px 11px;width:100%;transition:border-color .2s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brass);box-shadow:0 0 0 3px rgba(201,162,39,.12)}
+input[type=range]{padding:0;height:26px;accent-color:var(--brass2);background:transparent;border:none;box-shadow:none}
+input[type=checkbox]{width:16px;height:16px;accent-color:var(--brass2)}
+select{cursor:pointer}
+.field{display:flex;flex-direction:column;gap:5px}
+.toggle{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);user-select:none}
+.toggle .tr{width:34px;height:19px;border-radius:99px;background:var(--overlay);border:1px solid var(--line2);position:relative;transition:.2s;flex:none}
+.toggle .tr::after{content:"";position:absolute;top:2px;left:2px;width:13px;height:13px;border-radius:50%;background:var(--faint);transition:.2s}
+.toggle.on{color:var(--brass2)}
+.toggle.on .tr{background:var(--brassdim);border-color:var(--brass)}
+.toggle.on .tr::after{left:17px;background:var(--brass2);box-shadow:0 0 8px rgba(227,179,65,.7)}
+/* ===== VOICE STAGE ===== */
+.stage{display:grid;grid-template-columns:minmax(300px,420px) minmax(0,1fr);gap:20px;align-items:stretch}
+.orbwrap{display:flex;flex-direction:column;align-items:center;gap:14px;padding:26px 18px 20px;background:radial-gradient(ellipse at 50% 20%,rgba(201,162,39,.07),transparent 60%),linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--r)}
+#orb{width:min(320px,72vw);height:min(320px,72vw);cursor:pointer}
+.orb-state{font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--brass2)}
+.ptt{width:min(240px,64vw);padding:15px;border-radius:99px;font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:#14100a;background:linear-gradient(135deg,var(--brass2),var(--brass));border:1px solid var(--brass2);cursor:pointer;transition:.15s;box-shadow:0 4px 24px rgba(201,162,39,.3)}
+.ptt:hover{box-shadow:0 4px 32px rgba(227,179,65,.5)}
+.ptt.held{background:linear-gradient(135deg,var(--cyan),#0e9db5);border-color:var(--cyan);color:#04121a;box-shadow:0 0 36px rgba(34,211,238,.55);transform:scale(.98)}
+.ptt:disabled{opacity:.45;cursor:not-allowed}
+.micmeter{width:min(240px,64vw);height:5px;border-radius:99px;background:var(--overlay);overflow:hidden}
+.micmeter i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--cyan),var(--emerald));border-radius:99px;transition:width .08s linear}
+.console{display:flex;flex-direction:column;gap:14px;min-width:0;position:relative}
+.machine{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.machine .st{font-family:var(--mono);font-size:9.5px;letter-spacing:.12em;padding:4px 9px;border-radius:7px;border:1px solid var(--line2);color:var(--faint);transition:.3s}
+.machine .st.cur{color:#04121a;background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 14px rgba(34,211,238,.5);font-weight:700}
+.machine .st.cur.warn{background:var(--amber);border-color:var(--amber);box-shadow:0 0 14px rgba(251,191,36,.5)}
+.machine .arr{color:var(--faint);font-size:10px}
+.sessionline{display:flex;gap:18px;flex-wrap:wrap;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.sessionline b{color:var(--parch);font-weight:600}
+.capbar{height:6px;border-radius:99px;background:var(--overlay);overflow:hidden;flex:1;min-width:120px}
+.capbar i{display:block;height:100%;width:0%;background:linear-gradient(90deg,var(--emerald),var(--amber) 70%,var(--rose));transition:width 1s linear}
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:13px 14px;background:var(--panel2);border:1px solid var(--line2);border-radius:12px}
+.controls .sep{width:1px;height:24px;background:var(--line2)}
+.controls select{width:auto;min-width:110px;font-size:12px;padding:6px 9px}
+/* transcript */
+.transcript{flex:1;min-height:260px;max-height:430px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;padding:16px;background:var(--panel2);border:1px solid var(--line2);border-radius:12px}
+.tcard{max-width:88%;padding:10px 14px;border-radius:12px;font-size:13.5px;line-height:1.55;animation:tin .3s ease;border:1px solid transparent;white-space:pre-wrap;word-break:break-word}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}}
+.tcard.user{align-self:flex-end;background:linear-gradient(135deg,rgba(236,229,216,.1),rgba(236,229,216,.05));border-color:rgba(236,229,216,.18);color:var(--parch)}
+.tcard.jarvis{align-self:flex-start;background:linear-gradient(135deg,var(--brassdim),rgba(201,162,39,.04));border-color:var(--line);color:var(--parch)}
+.tcard.jarvis .who,.tcard.user .who{display:block;font-family:var(--mono);font-size:9px;letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px}
+.tcard.jarvis .who{color:var(--brass2)}
+.tcard.user .who{color:var(--muted);text-align:right}
+.tcard.system{align-self:center;max-width:96%;font-family:var(--mono);font-size:11px;color:var(--muted);background:rgba(139,147,167,.06);border-color:var(--line2);text-align:center}
+.tcard.interrupted{opacity:.65;border-style:dashed}
+.tcard .cut{font-family:var(--mono);font-size:9.5px;color:var(--rose);letter-spacing:.14em;text-transform:uppercase;display:block;margin-top:5px}
+.tcard.tool{align-self:flex-start;max-width:96%;width:96%;font-family:var(--mono);font-size:11.5px;background:rgba(34,211,238,.05);border-color:rgba(34,211,238,.25)}
+.tcard.tool .tname{color:var(--cyan);font-weight:700;letter-spacing:.06em}
+.tcard.tool .tstatus{float:right;font-size:9.5px;letter-spacing:.14em;text-transform:uppercase}
+.tcard.tool .tstatus.ok{color:var(--emerald)} .tcard.tool .tstatus.bad{color:var(--rose)} .tcard.tool .tstatus.wait{color:var(--amber)}
+.tcard.tool pre{margin-top:7px;max-height:150px;overflow:auto;font-size:10.5px;color:var(--muted);white-space:pre-wrap;word-break:break-word}
+.tcard.confirm{align-self:flex-start;max-width:96%;width:96%;background:rgba(251,191,36,.06);border-color:rgba(251,191,36,.4)}
+.tcard.confirm .say{font-size:13px;color:var(--amber);margin:6px 0 10px}
+.tcard.confirm .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.tcard.confirm .cd{font-family:var(--mono);font-size:10.5px;color:var(--faint);margin-left:auto}
+.tcard.thinking{align-self:flex-start;color:var(--brass2);font-family:var(--mono);font-size:11px;letter-spacing:.1em}
+.tcard.thinking .dots::after{content:"…";animation:dots 1.2s steps(4) infinite}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.composer{display:flex;gap:10px}
+.composer input{flex:1}
+.jump{position:absolute;right:14px;bottom:70px;z-index:5;display:none}
+.empty{color:var(--faint);font-size:13px;font-style:italic;padding:14px 4px}
+/* ===== GRADES ===== */
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.stat{background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line2);border-radius:var(--r);padding:15px 17px}
+.stat .v{font-family:var(--serif);font-size:31px;font-weight:700;color:var(--brass2);line-height:1.15}
+.stat .s{font-size:11px;color:var(--muted);margin-top:3px}
+.stat.cy .v{color:var(--cyan)} .stat.em .v{color:var(--emerald)} .stat.vi .v{color:var(--violet)}
+.warnbanner{border:1px solid rgba(251,191,36,.4);background:rgba(251,191,36,.06);color:var(--amber);border-radius:12px;padding:11px 15px;font-size:12.5px;margin-bottom:14px}
+.coursegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.course .top{display:flex;align-items:baseline;gap:10px}
+.course .code{font-family:var(--serif);font-size:19px;font-weight:700}
+.course .cname{font-size:11.5px;color:var(--muted)}
+.course .big{margin-left:auto;font-family:var(--serif);font-size:34px;font-weight:800;color:var(--brass2);text-shadow:0 0 18px rgba(227,179,65,.35)}
+.bar{height:8px;border-radius:99px;background:var(--overlay);overflow:hidden;margin:10px 0 4px;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:99px}
+.bar .bank{background:linear-gradient(90deg,var(--brass),var(--brass2));box-shadow:0 0 10px rgba(227,179,65,.4)}
+.bar .ceil{background:rgba(34,211,238,.28)}
+.barlbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--faint);margin-bottom:9px}
+.course .say{font-size:12.5px;color:var(--muted);margin-bottom:10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:.05em;padding:3px 9px;border-radius:99px;border:1px solid;transition:.2s;cursor:default}
+.chip:hover{transform:translateY(-1px)}
+.chip.secured{color:var(--emerald);border-color:rgba(52,211,153,.5);background:rgba(52,211,153,.07)}
+.chip.reachable{color:var(--amber);border-color:rgba(251,191,36,.5);background:rgba(251,191,36,.07)}
+.chip.unreachable{color:var(--rose);border-color:rgba(251,113,133,.5);background:rgba(251,113,133,.07)}
+.assess{border-top:1px dashed var(--line2);margin-top:10px;padding-top:10px;display:none}
+.assess.open{display:block}
+.arow{display:grid;grid-template-columns:minmax(0,1.4fr) 70px 78px 96px auto;gap:7px;align-items:center;padding:5px 0;font-size:12px}
+.arow input,.arow select{padding:5px 7px;font-size:12px}
+.arow .an{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+.finalwidget{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-top:16px;padding:15px;background:var(--panel2);border:1px solid var(--line);border-radius:12px}
+.finalwidget .field{min-width:130px;flex:1}
+.verdicts{margin-top:12px;display:flex;flex-direction:column;gap:7px}
+.verdict{font-size:12.5px;padding:9px 13px;border-radius:10px;border:1px solid var(--line2);background:rgba(13,19,34,.5)}
+.verdict.reachable{border-color:rgba(251,191,36,.35)} .verdict.unreachable{border-color:rgba(251,113,133,.35)} .verdict.secured{border-color:rgba(52,211,153,.35)}
+/* ===== TODAY / tasks ===== */
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:13px}
+.toolbar input[type=search]{max-width:230px}
+.toolbar select{width:auto;font-size:12px}
+.fchips{display:flex;gap:6px;flex-wrap:wrap}
+.fchip{font-family:var(--mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:5px 11px;border-radius:99px;border:1px solid var(--line2);color:var(--muted);cursor:pointer;transition:.2s;background:transparent}
+.fchip.on{color:var(--brass2);border-color:var(--brass);background:var(--brassdim)}
+.bulkbar{display:none;gap:10px;align-items:center;padding:9px 14px;margin-bottom:10px;background:var(--brassdim);border:1px solid var(--line);border-radius:10px;font-family:var(--mono);font-size:11px;color:var(--brass2)}
+.bulkbar.show{display:flex}
+.tasklist{display:flex;flex-direction:column;gap:8px}
+.task{display:flex;gap:11px;align-items:center;padding:12px 14px;background:linear-gradient(160deg,var(--panel),var(--panel2));border:1px solid var(--line2);border-radius:12px;transition:.2s;cursor:grab}
+.task:hover{border-color:var(--line);transform:translateX(3px)}
+.task.dragging{opacity:.4}
+.task.dropover{border-color:var(--cyan);box-shadow:0 -2px 0 var(--cyan)}
+.task.done{opacity:.55}
+.task.done .tt{text-decoration:line-through}
+.task .grip{color:var(--faint);cursor:grab;font-size:15px;flex:none}
+.task .tt{font-size:13.5px;font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.task .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:3px}
+.tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.06em;padding:2px 8px;border-radius:6px;border:1px solid var(--line2);color:var(--muted);white-space:nowrap}
+.tag.course{color:var(--cyan);border-color:rgba(34,211,238,.35)}
+.tag.due{color:var(--amber);border-color:rgba(251,191,36,.35)}
+.tag.due.hot{color:var(--rose);border-color:rgba(251,113,133,.45)}
+.tag.slot{color:var(--emerald);border-color:rgba(52,211,153,.35)}
+.stepper{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:11px;color:var(--muted)}
+.stepper button{width:20px;height:20px;border-radius:6px;border:1px solid var(--line2);background:var(--overlay);color:var(--parch);cursor:pointer;font-size:12px;line-height:1}
+.stepper button:hover{border-color:var(--brass)}
+.task .acts{margin-left:auto;display:flex;gap:6px;flex:none}
+.pill{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:99px;border:1px solid}
+.pill.pending{color:var(--muted);border-color:var(--line2)}
+.pill.scheduled{color:var(--cyan);border-color:rgba(34,211,238,.4)}
+.pill.in_progress{color:var(--amber);border-color:rgba(251,191,36,.4)}
+.pill.completed{color:var(--emerald);border-color:rgba(52,211,153,.4)}
+.pill.missed{color:var(--rose);border-color:rgba(251,113,133,.4)}
+/* ===== MEMORY ===== */
+.memgrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,1fr);gap:16px;align-items:start}
+.fact{padding:12px 14px;border:1px solid var(--line2);border-radius:12px;background:linear-gradient(160deg,var(--panel),var(--panel2));margin-bottom:8px;transition:.2s}
+.fact:hover{border-color:rgba(167,139,250,.4)}
+.fact .fk{font-family:var(--mono);font-size:11px;color:var(--violet);letter-spacing:.05em}
+.fact .fv{font-size:13px;margin:4px 0 7px}
+.fact .fm{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tag.vault{color:var(--rose);border-color:rgba(251,113,133,.4)}
+.tag.private{color:var(--amber);border-color:rgba(251,191,36,.4)}
+.tag.stale{color:var(--rose);border-color:rgba(251,113,133,.4)}
+.tag.src{color:var(--violet);border-color:rgba(167,139,250,.4)}
+.stars{color:var(--brass2);font-size:10px;letter-spacing:2px}
+.commit{padding:11px 13px;border:1px solid var(--line2);border-radius:11px;margin-bottom:8px;background:var(--panel2)}
+.commit .cp{font-size:13px}
+.commit .cm{display:flex;gap:7px;align-items:center;margin-top:7px;flex-wrap:wrap}
+.addform{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line2)}
+.addform .wide{grid-column:1/-1}
+/* ===== TOOLS ===== */
+.toolgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:11px}
+.tool{padding:13px 15px;border:1px solid var(--line2);border-radius:12px;background:linear-gradient(160deg,var(--panel),var(--panel2));transition:.2s;display:flex;flex-direction:column;gap:7px}
+.tool:hover{border-color:rgba(34,211,238,.4);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.tool .tn{font-family:var(--mono);font-size:12.5px;font-weight:700;color:var(--cyan)}
+.tool .td{font-size:11.5px;color:var(--muted);flex:1}
+.tool .tm{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.tag.read{color:var(--emerald);border-color:rgba(52,211,153,.35)}
+.tag.write{color:var(--amber);border-color:rgba(251,191,36,.35)}
+.tag.destructive{color:var(--rose);border-color:rgba(251,113,133,.4)}
+/* ===== SYSTEM ===== */
+.sysgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;align-items:start}
+.check{display:flex;gap:10px;align-items:baseline;padding:7px 0;border-bottom:1px dashed var(--line2);font-size:12.5px}
+.check:last-child{border:none}
+.check .ic{font-size:13px;flex:none}
+.check .ic.ok{color:var(--emerald)} .check .ic.bad{color:var(--rose)}
+.check .cd{color:var(--faint);font-size:11px;font-family:var(--mono)}
+.sessrow{display:grid;grid-template-columns:minmax(0,1.3fr) 70px 64px 60px 56px;gap:8px;padding:8px 6px;border-bottom:1px dashed var(--line2);font-family:var(--mono);font-size:11px;color:var(--muted);cursor:pointer;align-items:center}
+.sessrow:hover{background:rgba(201,162,39,.05);color:var(--parch)}
+.promptbox{max-height:300px;overflow:auto;font-family:var(--mono);font-size:11px;color:var(--muted);white-space:pre-wrap;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:13px;margin-top:10px}
+.setgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.setgrid .wide{grid-column:1/-1}
+.rangeval{font-family:var(--mono);font-size:11px;color:var(--brass2)}
+/* drawer / modal / toast */
+.scrim{position:fixed;inset:0;background:rgba(4,6,12,.66);backdrop-filter:blur(3px);z-index:80;opacity:0;pointer-events:none;transition:.25s}
+.scrim.show{opacity:1;pointer-events:auto}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(430px,100vw);background:linear-gradient(180deg,var(--overlay),var(--ink2));border-left:1px solid var(--line);z-index:90;transform:translateX(102%);transition:transform .3s cubic-bezier(.2,.8,.2,1);padding:24px;overflow-y:auto}
+.drawer.show{transform:none}
+.drawer h3{font-family:var(--serif);font-size:20px;color:var(--brass2);margin-bottom:16px}
+.drawer .field{margin-bottom:12px}
+.drawer .row{display:flex;gap:10px;margin-top:18px}
+.modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-46%) scale(.96);width:min(560px,94vw);max-height:86vh;overflow-y:auto;background:linear-gradient(170deg,var(--overlay),var(--ink2));border:1px solid var(--line);border-radius:16px;z-index:95;padding:24px;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.modal.show{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.modal h3{font-family:var(--serif);font-size:19px;color:var(--brass2);margin-bottom:12px}
+.modal .row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.modal pre{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:pre-wrap;word-break:break-word;max-height:300px;overflow:auto;background:var(--panel2);border:1px solid var(--line2);border-radius:10px;padding:12px;margin-top:10px}
+.toasts{position:fixed;top:calc(var(--topbar) + 12px);right:16px;z-index:120;display:flex;flex-direction:column;gap:9px;max-width:min(360px,90vw)}
+.toast{padding:12px 15px;border-radius:12px;font-size:12.5px;border:1px solid;background:rgba(13,19,34,.95);backdrop-filter:blur(8px);animation:tin .3s ease;box-shadow:0 10px 30px rgba(0,0,0,.45);display:flex;gap:10px;align-items:center}
+.toast.ok{border-color:rgba(52,211,153,.5);color:var(--emerald)}
+.toast.warn{border-color:rgba(251,191,36,.5);color:var(--amber)}
+.toast.err{border-color:rgba(251,113,133,.5);color:var(--rose)}
+.toast.info{border-color:rgba(34,211,238,.5);color:var(--cyan)}
+.toast .btn{margin-left:auto}
+.undo-toast{position:fixed;left:16px;bottom:16px;z-index:120;display:none;align-items:center;gap:12px;padding:13px 16px;border-radius:12px;background:rgba(13,19,34,.96);border:1px solid var(--line);font-size:12.5px;color:var(--parch);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.undo-toast.show{display:flex;animation:tin .3s ease}
+.undo-toast .cd{font-family:var(--mono);font-size:10px;color:var(--faint)}
+.lock{position:fixed;inset:0;z-index:200;background:radial-gradient(ellipse at 50% 30%,rgba(201,162,39,.08),transparent 55%),var(--ink);display:none;place-items:center}
+.lock.show{display:grid}
+.lock .box{width:min(380px,90vw);text-align:center;padding:34px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(170deg,var(--panel),var(--panel2))}
+.lock .hat{font-size:44px;display:block;margin-bottom:12px;filter:drop-shadow(0 0 16px rgba(227,179,65,.5))}
+.lock h2{font-family:var(--serif);font-size:22px;color:var(--brass2);margin-bottom:8px}
+.lock p{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+.lock input{margin-bottom:12px;text-align:center;font-family:var(--mono)}
+.skel{border-radius:12px;background:linear-gradient(100deg,var(--panel2) 40%,var(--overlay) 50%,var(--panel2) 60%);background-size:200% 100%;animation:sh 1.4s infinite linear;height:80px}
+@keyframes sh{to{background-position:-200% 0}}
+footer{margin-top:30px;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint)}
+:focus-visible{outline:2px solid var(--brass2);outline-offset:2px}
+/* entrance */
+.enter{opacity:0;transform:translateY(16px);animation:ent .7s ease forwards}
+@keyframes ent{to{opacity:1;transform:none}}
+.d1{animation-delay:.05s}.d2{animation-delay:.15s}.d3{animation-delay:.25s}.d4{animation-delay:.35s}
+/* responsive */
+@media(max-width:980px){
+  .stage{grid-template-columns:1fr}
+  .memgrid{grid-template-columns:1fr}
+  .brand small{display:none}
+  #clock{display:none}
+}
+@media(max-width:640px){
+  main{padding-left:12px;padding-right:12px}
+  header{padding:0 12px;gap:10px}
+  .brand h1{font-size:17px}
+  .arow{grid-template-columns:minmax(0,1fr) 42px 54px 78px auto;gap:5px}
+  .arow input,.arow select{padding:4px 5px;font-size:11px}
+  .sessrow{grid-template-columns:minmax(0,1.2fr) 56px 56px;}
+  .sessrow .hx{display:none}
+  .task .tt{white-space:normal}
+  .controls{gap:8px}
+  .setgrid{grid-template-columns:1fr}
+  .sec-head h2{font-size:22px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><div class="lamp"></div><div class="aur a1"></div><div class="aur a2"></div><div class="grain"></div><div class="vig"></div></div>
+
+<div class="lock" id="lock"><div class="box">
+  <span class="hat">🎩</span><h2>The study is locked</h2>
+  <p>This Jarvis requires his access token. It lives in the server's <b>.env</b> as JARVIS_ACCESS_TOKEN.</p>
+  <input type="password" id="lockToken" placeholder="access token" autocomplete="off">
+  <button class="btn primary" id="lockBtn" style="width:100%">Unlock the study</button>
+</div></div>
+
+<header class="enter d1">
+  <div class="brand"><span class="hat">🎩</span><h1>JARVIS</h1><small>Night Desk · v4</small></div>
+  <nav id="nav">
+    <a href="#voice" class="active">Voice</a><a href="#grades">Grades</a><a href="#today">Today</a>
+    <a href="#memory">Memory</a><a href="#tools">Tools</a><a href="#system">System</a>
+  </nav>
+  <div class="top-right">
+    <span id="clock"></span>
+    <span class="badge" id="modelBadge" title="Active models (click for System)" style="color:var(--cyan);border-color:rgba(34,211,238,.35);cursor:pointer" onclick="location.href=\'#system\'">brain: loading…</span>
+    <span class="badge rehearsal" id="modeBadge">rehearsal</span>
+    <button class="iconbtn" id="muteBtn" title="Mute all sound" aria-label="Mute all sound">🔔</button>
+  </div>
+</header>
+
+<main>
+<!-- ================= VOICE ================= -->
+<section id="voice">
+  <div class="sec-head reveal"><span class="kicker">01 · The Switchboard</span><h2>Talk to Jarvis</h2><span class="rule"></span></div>
+  <div class="stage">
+    <div class="orbwrap enter d2">
+      <canvas id="orb" width="320" height="320" aria-label="Jarvis voice orb"></canvas>
+      <div class="orb-state" id="orbState">IDLE</div>
+      <button class="ptt" id="ptt" disabled>Hold to talk</button>
+      <div class="micmeter" aria-hidden="true"><i id="micFill"></i></div>
+      <div class="lbl" id="micHint">hold or tap mic to speak · or type below</div>
+        <div style="width:100%;max-width:460px;margin-top:10px"><div class="composer">
+        <input id="textInput" placeholder="Type to Jarvis — typed text never interrupts his speech…" autocomplete="off" aria-label="Type to Jarvis">
+        <button class="btn primary" id="sendBtn">Send</button>
+      </div>
+    </div></div>
+    </div>
+    <div class="console enter d3">
+      <div class="card brassline" style="padding:14px 16px">
+        <div class="machine" id="machine"></div>
+        <div class="sessionline" style="margin-top:10px">
+          <span>session <b id="sessTime">0:00</b></span>
+          <span>turns <b id="sessTurns">0</b></span>
+          <span>tokens <b id="sessTokens">0</b></span>
+          <span style="display:flex;align-items:center;gap:8px;flex:1">daily cap <span class="capbar"><i id="capFill"></i></span> <b id="capLbl">0 / 90m</b></span>
+        </div>
+      </div>
+      <div class="controls" id="controls">
+        <label class="toggle" id="tgHands"><span class="tr"></span>Hands-free</label>
+        <label class="toggle" id="tgRecord"><span class="tr"></span>Off-record</label>
+        <label class="toggle on" id="tgBrowserVoice"><span class="tr"></span>Browser voice</label>
+        <span class="sep"></span>
+        <div class="field" style="min-width:155px"><span class="lbl">Voice</span><select id="localVoiceSel" aria-label="Local Kokoro voice"></select></div>
+        <span class="sep"></span>
+        <button class="btn sm" id="interruptBtn" title="Cut Jarvis off mid-sentence">Interrupt</button>
+        <button class="btn sm" id="reconnectBtn" title="Reconnect the session" style="display:none">Reconnect</button>
+        <button class="btn sm danger" id="endBtn" title="End the session">End</button>
+      </div>
+      <div class="transcript" id="transcript" style="position:relative">
+        <div class="tcard system">The transcript ledger appears here. Every turn is committed exactly once — even interrupted ones.</div>
+      </div>
+      <button class="btn sm jump" id="jumpBtn">↓ latest</button>
+      
+  </div>
+</section>
+
+<!-- ================= GRADES ================= -->
+<section id="grades">
+  <div class="sec-head reveal"><span class="kicker">02 · The Accountant</span><h2>The truth about grades</h2><span class="rule"></span></div>
+  <div class="statgrid reveal" id="gpaCards"><div class="skel"></div><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+  <div id="gradeWarns"></div>
+  <div class="coursegrid reveal" id="courseGrid"><div class="skel" style="height:180px"></div><div class="skel" style="height:180px"></div></div>
+  <div class="finalwidget reveal">
+    <div class="field"><span class="lbl">Course</span><select id="fwCourse"></select></div>
+    <div class="field"><span class="lbl">Target grade</span><select id="fwLetter"></select></div>
+    <button class="btn primary" id="fwBtn">What do I need on the final?</button>
+    <div class="verdicts" id="fwOut" style="width:100%"></div>
+  </div>
+</section>
+
+<!-- ================= TODAY ================= -->
+<section id="today">
+  <div class="sec-head reveal"><span class="kicker">03 · The Day Book</span><h2>Today &amp; the task ledger</h2><span class="rule"></span></div>
+  <div class="toolbar reveal">
+    <input type="search" id="taskQ" placeholder="Search tasks…" aria-label="Search tasks">
+    <select id="taskCourse" aria-label="Filter by course"><option value="">All courses</option></select>
+    <select id="taskSort" aria-label="Sort tasks">
+      <option value="deadline">Sort: deadline</option><option value="priority">Sort: priority (drag order)</option>
+      <option value="created">Sort: newest</option><option value="course">Sort: course</option>
+    </select>
+    <div class="fchips" id="statusChips">
+      <button class="fchip on" data-st="">Open</button><button class="fchip" data-st="scheduled">Scheduled</button>
+      <button class="fchip" data-st="in_progress">In progress</button><button class="fchip" data-st="completed">Done</button>
+      <button class="fchip" data-st="missed">Missed</button>
+    </div>
+    <button class="btn primary sm" id="newTaskBtn" style="margin-left:auto">+ New task</button>
+  </div>
+  <div class="bulkbar" id="bulkBar"><span id="bulkCount">0 selected</span>
+    <button class="btn sm good" id="bulkDone">✓ Complete</button>
+    <button class="btn sm danger" id="bulkCancel">Cancel</button>
+    <button class="btn sm" id="bulkClear">Clear</button>
+  </div>
+  <div class="tasklist reveal" id="taskList"><div class="skel"></div><div class="skel"></div></div>
+  <div class="card reveal" style="margin-top:16px">
+    <h3>Today's blocks</h3><div id="blockList"><div class="empty">Loading the day…</div></div>
+    <div style="margin-top:10px" class="lbl" id="stateLine"></div>
+  </div>
+</section>
+
+<!-- ================= MEMORY ================= -->
+<section id="memory">
+  <div class="sec-head reveal"><span class="kicker">04 · The Memory Engine</span><h2>What Jarvis remembers</h2><span class="rule"></span></div>
+  <div class="memgrid">
+    <div class="card reveal">
+      <div class="toolbar" style="margin-bottom:10px">
+        <input type="search" id="factQ" placeholder="Search facts…" aria-label="Search facts">
+        <select id="factDomain" aria-label="Filter by domain"><option value="">All domains</option></select>
+      </div>
+      <div id="factList"><div class="skel"></div></div>
+      <div class="addform">
+        <div class="field"><span class="lbl">Domain</span><input id="nfDomain" value="Academics"></div>
+        <div class="field"><span class="lbl">Key</span><input id="nfKey" placeholder="exam_style"></div>
+        <div class="field wide"><span class="lbl">Value</span><input id="nfValue" placeholder="AMA finals are past-paper heavy"></div>
+        <div class="field"><span class="lbl">Sensitivity</span><select id="nfSens"><option>normal</option><option>private</option><option>vault</option></select></div>
+        <div class="field"><span class="lbl">Importance (1–5)</span><input id="nfImp" type="number" min="1" max="5" value="3"></div>
+        <button class="btn primary wide" id="nfBtn">Commit to memory</button>
+      </div>
+    </div>
+    <div class="card reveal">
+      <h3>Open promises</h3>
+      <div id="commitList"><div class="skel" style="height:60px"></div></div>
+      <div class="addform" style="grid-template-columns:1fr">
+        <div class="field"><span class="lbl">New promise</span><input id="ncPromise" placeholder="Finish AMA Ch6 past paper"></div>
+        <div class="field"><span class="lbl">Due (e.g. tomorrow 9pm)</span><input id="ncDue" placeholder="tomorrow 9pm"></div>
+        <button class="btn primary" id="ncBtn">Make the promise</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TOOLS ================= -->
+<section id="tools">
+  <div class="sec-head reveal"><span class="kicker">05 · The Front Desk</span><h2>Every tool he carries</h2><span class="rule"></span></div>
+  <div class="toolbar reveal">
+    <input type="search" id="toolQ" placeholder="Search 26 tools…" aria-label="Search tools">
+    <div class="fchips" id="riskChips">
+      <button class="fchip on" data-risk="">All</button><button class="fchip" data-risk="read">Read</button>
+      <button class="fchip" data-risk="write">Write</button><button class="fchip" data-risk="destructive">Destructive</button>
+    </div>
+    <span class="lbl" id="toolCoverage" style="margin-left:auto"></span>
+  </div>
+  <div class="toolgrid reveal" id="toolGrid"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+</section>
+
+<!-- ================= SYSTEM ================= -->
+<section id="system">
+  <div class="sec-head reveal"><span class="kicker">06 · The Engine Room</span><h2>System &amp; diagnostics</h2><span class="rule"></span></div>
+  <div class="sysgrid">
+    <div class="card reveal">
+      <h3>Capability probe</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Verifies the SDK, models, text ping, Live handshake and Roman Urdu on your key — before we depend on them.</p>
+      <button class="btn primary" id="probeBtn">Run probe</button>
+      <div id="probeOut" style="margin-top:12px"></div>
+    </div>
+    <div class="card reveal">
+      <h3>Settings</h3>
+      <div class="setgrid" id="setGrid"></div>
+      <button class="btn primary" id="setSave" style="margin-top:14px">Save settings</button>
+    </div>
+    <div class="card reveal">
+      <h3>Session history</h3>
+      <div class="sessrow" style="cursor:default;color:var(--faint)"><span>session</span><span>turns</span><span>live</span><span class="hx">goaways</span><span class="hx">close</span></div>
+      <div id="sessList"><div class="skel" style="height:50px"></div></div>
+    </div>
+    <div class="card reveal">
+      <h3>The wake briefing</h3>
+      <p style="font-size:12px;color:var(--muted)">Exactly what Jarvis wakes up knowing, under its token budget.</p>
+      <div class="sessionline" style="margin:10px 0"><span>tokens <b id="wpTokens">—</b></span><span>budget <b id="wpBudget">—</b></span><span class="capbar"><i id="wpFill"></i></span></div>
+      <div class="chips" id="wpSections"></div>
+      <div class="promptbox" id="wpText">Loading…</div>
+      <div class="row" style="display:flex;gap:10px;margin-top:12px">
+        <button class="btn sm" id="wpRefresh">Refresh</button><button class="btn sm" id="wpCopy">Copy</button>
+      </div>
+    </div>
+    <div class="card reveal">
+      <h3>Backups &amp; safety</h3>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Every delete is undoable for 30 seconds. Every write is in the audit log. Snapshots live in <b>backups/</b>.</p>
+      <button class="btn primary" id="backupBtn">Take a snapshot now</button>
+      <div id="backupList" style="margin-top:12px"></div>
+    </div>
+  </div>
+</section>
+<footer>Jarvis // Night Desk · truth before voice · the LLM proposes, code disposes</footer>
+</main>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" aria-label="Detail editor"><h3 id="drawerTitle">Edit</h3><div id="drawerBody"></div>
+  <div class="row"><button class="btn primary" id="drawerSave">Save</button><button class="btn" id="drawerClose">Close</button></div>
+</aside>
+<div class="modal" id="modal" role="dialog" aria-modal="true"><h3 id="modalTitle"></h3><div id="modalBody"></div><div class="row" id="modalRow"></div></div>
+<div class="toasts" id="toasts"></div>
+<div class="undo-toast" id="undoToast"><span id="undoMsg"></span><button class="btn sm primary" id="undoBtn">Undo</button><span class="cd" id="undoCd"></span></div>
+
+<script>
+(() => {
+"use strict";
+/* ================= helpers & state ================= */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+const S = {
+  token: localStorage.getItem("jarvis_token") || "", mode: "rehearsal", authRequired: false,
+  ws: null, wsState: "IDLE", session: null, ending: false, reconnectTries: 0, pingTimer: null,
+  muted: localStorage.getItem("jarvis_mute") === "1", handsFree: false, offRecord: false,
+  browserVoice: localStorage.getItem("jarvis_bvoice") !== "0",
+  localVoice: localStorage.getItem("jarvis_local_voice") || "af_heart",
+  micMuted: false, pttActive: false,
+  dash: null, specs: [], settings: null, voices: [], tasks: [], facts: [], commits: [],
+  sel: new Set(), filters: { q: "", status: "", course: "", sort: "deadline" },
+  factQ: "", factDomain: "", toolQ: "", toolRisk: "",
+  live: { user: null, jarvis: null }, turnCount: 0, confirmTimers: {}, undo: null, undoTimer: null,
+  micLevel: 0, playLevel: 0, orbState: "IDLE", drawer: null, rec: null, micWarned: false
+};
+const STATES = ["IDLE","CONNECTING","LIVE","GOAWAY","RESUMING","CLOSING"];
+const STATE_COLOR = { IDLE:"#c9a227", CONNECTING:"#fbbf24", LIVE:"#22d3ee", GOAWAY:"#fb7185", RESUMING:"#a78bfa", CLOSING:"#6b7488" };
+
+async function api(path, opts={}) {
+  const headers = Object.assign({ "Content-Type": "application/json" }, opts.headers || {});
+  if (S.token) headers["X-Jarvis-Token"] = S.token;
+  const r = await fetch(path, Object.assign({}, opts, { headers }));
+  if (r.status === 401) { showLock(); throw new Error("unauthorized"); }
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.error || d.message || ("HTTP " + r.status));
+  return d;
+}
+function toast(msg, kind="info", ms=4200) {
+  const t = el("div", "toast " + kind, msg);
+  $("#toasts").appendChild(t);
+  setTimeout(() => { t.style.opacity = "0"; t.style.transition = "opacity .4s"; setTimeout(() => t.remove(), 420); }, ms);
+}
+function showLock() { $("#lock").classList.add("show"); }
+function fmtSecs(s) { s = Math.max(0, Math.floor(s||0)); return Math.floor(s/60) + ":" + String(s%60).padStart(2,"0"); }
+function relDeadline(iso) {
+  if (!iso) return null;
+  const d = new Date(iso), now = new Date(), h = (d - now) / 36e5;
+  if (h < 0) return { text: "overdue", hot: true };
+  if (h < 24) return { text: "in " + Math.max(1, Math.round(h)) + "h", hot: h < 6 };
+  return { text: d.toLocaleDateString("en-GB", { day: "numeric", month: "short" }), hot: false };
+}
+/* ================= UI sound (all gated by master mute) ================= */
+let uiCtx = null;
+function blip(freq, dur=0.07, type="sine", gain=0.05, when=0) {
+  if (S.muted) return;
+  try {
+    uiCtx = uiCtx || new (window.AudioContext || window.webkitAudioContext)();
+    if (uiCtx.state === "suspended") uiCtx.resume();
+    const o = uiCtx.createOscillator(), g = uiCtx.createGain();
+    o.type = type; o.frequency.value = freq;
+    g.gain.setValueAtTime(gain, uiCtx.currentTime + when);
+    g.gain.exponentialRampToValueAtTime(0.0001, uiCtx.currentTime + when + dur);
+    o.connect(g); g.connect(uiCtx.destination);
+    o.start(uiCtx.currentTime + when); o.stop(uiCtx.currentTime + when + dur + 0.02);
+  } catch (e) {}
+}
+const snd = {
+  connect() { blip(523, .1); blip(784, .14, "sine", .05, .1); },
+  tool() { blip(660, .045, "triangle", .04); },
+  confirm() { blip(440, .09); blip(330, .12, "sine", .05, .09); },
+  error() { blip(180, .18, "sawtooth", .035); },
+  done() { blip(880, .06, "sine", .035); }
+};
+function setMuted(m) {
+  S.muted = m; localStorage.setItem("jarvis_mute", m ? "1" : "0");
+  $("#muteBtn").textContent = m ? "🔕" : "🔔";
+  $("#muteBtn").classList.toggle("off", m);
+  $("#muteBtn").title = m ? "Sound is muted — click to unmute everything" : "Mute all sound";
+  AudioEngine.setMuted(m);
+  if (m && window.speechSynthesis) speechSynthesis.cancel(); if (m && S._ttsAudio) { try { S._ttsAudio.pause(); } catch (e) {} }
+}
+
+const TtsQueue = {
+  q: [],
+  buf: "",
+  playing: false,
+  cur: null,
+  gen: 0,
+  ctrls: new Set(),
+
+  stop() {
+    this.gen++;
+    this.q = [];
+    this.buf = "";
+    this.ctrls.forEach(c => { try { c.abort(); } catch (e) {} });
+    this.ctrls.clear();
+    if (this.cur) {
+      try {
+        this.cur.onended = null;
+        this.cur.onerror = null;
+        this.cur.pause();
+        this.cur.currentTime = 0;
+        this.cur.src = "";
+      } catch (e) {}
+      this.cur = null;
+    }
+    this.playing = false;
+  },
+
+  pushChunk(chunk) {
+    this.buf += (chunk || "");
+    // Split immediately on newlines, sentence endings, or long ~115-char clauses
+    while (true) {
+      const nlIdx = this.buf.indexOf("\n");
+      if (nlIdx !== -1) {
+        const line = this.buf.slice(0, nlIdx).trim();
+        this.buf = this.buf.slice(nlIdx + 1);
+        if (line) this.enqueue(line);
+        continue;
+      }
+      const sentM = this.buf.match(/^([\s\S]*?[.!?]+)(?:\s+|$)/);
+      if (sentM && sentM[1].trim().length >= 8) {
+        const sent = sentM[1].trim();
+        this.buf = this.buf.slice(sentM[0].length);
+        if (sent) this.enqueue(sent);
+        continue;
+      }
+      if (this.buf.length >= 115) {
+        const slice = this.buf.slice(0, 115);
+        const brk = Math.max(slice.lastIndexOf(", "), slice.lastIndexOf("; "), slice.lastIndexOf(": "), slice.lastIndexOf(" "));
+        const cut = brk > 35 ? brk + 1 : 115;
+        const piece = this.buf.slice(0, cut).trim();
+        this.buf = this.buf.slice(cut);
+        if (piece) this.enqueue(piece);
+        continue;
+      }
+      break;
+    }
+  },
+
+  flushRemainder() {
+    const rem = (this.buf || "").trim();
+    this.buf = "";
+    if (rem) this.enqueue(rem);
+  },
+
+  enqueue(text) {
+    const clean = (text || "").replace(/[*_`#]+/g, "").trim();
+    if (!clean || !S.browserVoice || S.muted) return;
+    const gen = this.gen;
+    const ctrl = new AbortController();
+    this.ctrls.add(ctrl);
+    // Prefetch audio immediately so next line is ready with zero gap
+    const blobPromise = fetch("/api/tts", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: clean, voice: S.localVoice || "af_heart" }),
+      signal: ctrl.signal
+    })
+      .then(r => (r.ok ? r.blob() : null))
+      .catch(() => null)
+      .finally(() => this.ctrls.delete(ctrl));
+
+    this.q.push({ gen, blobPromise });
+    if (!this.playing) this._next();
+  },
+
+  async _next() {
+    if (!this.q.length) {
+      this.playing = false;
+      return;
+    }
+    this.playing = true;
+    const item = this.q.shift();
+    if (item.gen !== this.gen) {
+      this.playing = false;
+      return;
+    }
+    const blob = await item.blobPromise;
+    if (!blob || blob.size < 64 || item.gen !== this.gen) {
+      return this._next();
+    }
+    const url = URL.createObjectURL(blob);
+    const a = new Audio(url);
+    this.cur = a;
+    const done = () => {
+      URL.revokeObjectURL(url);
+      if (this.cur === a) this.cur = null;
+      if (item.gen === this.gen) this._next();
+    };
+    a.onended = done;
+    a.onerror = done;
+    try {
+      await a.play();
+    } catch (e) {
+      done();
+    }
+  }
+};
+
+/* ================= audio playback (Gemini PCM16 24kHz) ================= */
+const AudioEngine = {
+  ctx: null, gain: null, analyser: null, nextTime: 0, sources: [], data: null,
+  ensure() {
+    if (this.ctx) { if (this.ctx.state === "suspended") this.ctx.resume(); return true; }
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AC();
+      this.gain = this.ctx.createGain(); this.gain.gain.value = S.muted ? 0 : 1;
+      this.analyser = this.ctx.createAnalyser(); this.analyser.fftSize = 256;
+      this.data = new Uint8Array(this.analyser.frequencyBinCount);
+      this.gain.connect(this.analyser); this.analyser.connect(this.ctx.destination);
+      return true;
+    } catch (e) { return false; }
+  },
+  play(buf) {
+    if (!this.ensure()) return;
+    const i16 = new Int16Array(buf);
+    if (!i16.length) return;
+    const f32 = new Float32Array(i16.length);
+    for (let i = 0; i < i16.length; i++) f32[i] = i16[i] / 32768;
+    const b = this.ctx.createBuffer(1, f32.length, 24000);
+    b.copyToChannel(f32, 0);
+    const src = this.ctx.createBufferSource(); src.buffer = b; src.connect(this.gain);
+    const t = Math.max(this.nextTime, this.ctx.currentTime + 0.08);
+    src.start(t); this.nextTime = t + b.duration;
+    this.sources.push(src);
+    src.onended = () => { const i = this.sources.indexOf(src); if (i >= 0) this.sources.splice(i, 1); };
+  },
+  flush() { this.sources.forEach(s => { try { s.stop(); } catch (e) {} }); this.sources = []; this.nextTime = 0; },
+  level() {
+    if (!this.analyser) return 0;
+    this.analyser.getByteFrequencyData(this.data);
+    let sum = 0; for (let i = 0; i < this.data.length; i++) sum += this.data[i];
+    return Math.min(1, (sum / this.data.length) / 90);
+  },
+  setMuted(m) { if (this.gain) this.gain.gain.value = m ? 0 : 1; }
+};
+/* ================= microphone (AudioWorklet → PCM16 16kHz) ================= */
+const WORKLET = `class PCM16 extends AudioWorkletProcessor{
+constructor(){super();this.acc=0;this.buf=[];}
+process(inputs){const ch=inputs[0]&&inputs[0][0];if(!ch)return true;
+const ratio=sampleRate/16000;let rms=0;
+for(let i=0;i<ch.length;i++){rms+=ch[i]*ch[i];this.acc+=1;
+if(this.acc>=ratio){this.acc-=ratio;let s=Math.max(-1,Math.min(1,ch[i]));this.buf.push(s<0?s*32768:s*32767);}}
+if(this.buf.length>=320){const out=new Int16Array(this.buf);this.buf=[];
+this.port.postMessage({pcm:out,rms:Math.sqrt(rms/ch.length)},[out.buffer]);}
+return true;}}
+registerProcessor('pcm16',PCM16);`;
+const Mic = {
+  stream: null, ctx: null, node: null, sending: false, ok: false,
+  async start() {
+    if (this.ok) return true;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { this.warn("This browser has no microphone access — typed text still works."); return false; }
+    try {
+      this.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+    } catch (e) { this.warn("Microphone permission denied — typed text still works."); return false; }
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      this.ctx = new AC();
+      const src = this.ctx.createMediaStreamSource(this.stream);
+      const url = URL.createObjectURL(new Blob([WORKLET], { type: "application/javascript" }));
+      await this.ctx.audioWorklet.addModule(url);
+      this.node = new AudioWorkletNode(this.ctx, "pcm16");
+      this.node.port.onmessage = (e) => {
+        S.micLevel = e.data.rms || 0;
+        if (this.sending && S.ws && S.ws.readyState === 1 && S.wsState === "LIVE" && S.mode === "real") S.ws.send(e.data.pcm.buffer);
+      };
+      src.connect(this.node);
+      this.ok = true; return true;
+    } catch (e) { this.warn("Mic pipeline unavailable here — typed text still works."); return false; }
+  },
+  warn(msg) { if (!S.micWarned) { S.micWarned = true; toast(msg, "warn", 6000); } $("#micHint").textContent = "mic unavailable · typed text works"; }
+};
+/* rehearsal speech recognition (browser-provided, no key needed) */
+function rehearsalListen(on) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) { Mic.warn("Speech recognition unavailable in this browser — type instead."); return; }
+  if (!on) { if (S.rec) { try { S.rec.stop(); } catch (e) {} } return; }
+  try {
+    S.rec = new SR(); S.rec.lang = "en-US"; S.rec.interimResults = false; S.rec.maxAlternatives = 1;
+    S.rec.onresult = (e) => { const t = e.results[0][0].transcript; if (t) sendText(t, "rehearsal_mic"); };
+    S.rec.onerror = () => {};
+    S.rec.start();
+  } catch (e) {}
+}
+/* ================= WebSocket ================= */
+function wsURL() {
+  const proto = location.protocol === "https:" ? "wss:" : "ws:";
+  return proto + "//" + location.host + "/ws/live" + (S.token ? "?token=" + encodeURIComponent(S.token) : "");
+}
+function connectWS() {
+  S.ending = false;
+  try { S.ws = new WebSocket(wsURL()); } catch (e) { scheduleReconnect(); return; }
+  S.ws.binaryType = "arraybuffer";
+  S.ws.onopen = () => { S.reconnectTries = 0; clearInterval(S.pingTimer); S.pingTimer = setInterval(() => { if (S.ws && S.ws.readyState === 1) S.ws.send(JSON.stringify({ type: "ping" })); }, 20000); };
+  S.ws.onmessage = (ev) => {
+    if (ev.data instanceof ArrayBuffer) { AudioEngine.play(ev.data); return; }
+    let d; try { d = JSON.parse(ev.data); } catch (e) { return; }
+    handleEvent(d);
+  };
+  S.ws.onclose = () => { clearInterval(S.pingTimer); if (!S.ending) scheduleReconnect(); setWsState("IDLE"); };
+  S.ws.onerror = () => {};
+}
+function scheduleReconnect() {
+  if (S.reconnectTries >= 6) { toast("Connection lost. Press Reconnect to try again.", "err"); return; }
+  S.reconnectTries++;
+  setTimeout(connectWS, Math.min(8000, 700 * S.reconnectTries));
+}
+function wsSend(obj) { if (S.ws && S.ws.readyState === 1) S.ws.send(JSON.stringify(obj)); }
+function setWsState(st) {
+  S.wsState = st; S.orbState = st;
+  $("#orbState").textContent = st + (S.mode === "rehearsal" && st === "LIVE" ? " · rehearsal" : "");
+  $$("#machine .st").forEach(n => { n.classList.toggle("cur", n.dataset.st === st); n.classList.toggle("warn", n.dataset.st === st && (st === "GOAWAY" || st === "RESUMING")); });
+  $("#ptt").disabled = false;
+  $("#ptt").textContent = "🎙 Hold / Tap to Talk";
+  const lp = $("#livePowerBtn"); if (lp) lp.textContent = (st === "LIVE" || st === "CONNECTING" || st === "RESUMING") ? "Sleep Live" : "Wake Live";
+}
+function handleEvent(d) {
+  switch (d.type) {
+    case "state":
+      setWsState(d.state);
+      if (d.state === "LIVE") { snd.connect(); if (d.resumed) toast("Session resumed — no turns lost.", "ok"); }
+      if (d.state === "GOAWAY") toast("Google is rotating the connection — resuming automatically…", "warn");
+      if (d.state === "CLOSING") AudioEngine.flush();
+      break;
+    case "hello":
+      S.session = d; S.mode = d.mode; renderMode();
+      $("#capLbl").textContent = "0 / " + d.cap_mins + "m";
+      if (d.voice && $("#voiceSel").value !== d.voice) { $("#voiceSel").value = d.voice; }
+      break;
+    case "transcript": appendTranscript(d); break;
+    case "thinking": showThinking(); break;
+    case "tool_call": addToolCard(d); snd.tool(); break;
+    case "tool_result": updateToolCard(d); if (d.result && d.result.ok) { refreshDash(); loadTasks(); loadFacts(); loadCommits(); } break;
+    case "confirm_request": addConfirmCard(d); snd.confirm(); break;
+    case "confirm_expired": expireConfirm(d.id); break;
+    case "interrupted":
+      AudioEngine.flush(); if (window.speechSynthesis) speechSynthesis.cancel();
+      if (S.live.jarvis) { S.live.jarvis.classList.add("interrupted"); S.live.jarvis.appendChild(el("span", "cut", "— interrupted —")); S.live.jarvis = null; }
+      break;
+    case "turn_complete": finalizeLive(); S.turnCount++; $("#sessTurns").textContent = S.turnCount; break;
+    case "usage":
+      if (d.live_seconds !== undefined) { $("#sessTime").textContent = fmtSecs(d.live_seconds);
+        if (S.session) { const pct = Math.min(100, d.live_seconds / (S.session.cap_mins * 60) * 100); $("#capFill").style.width = pct + "%"; $("#capLbl").textContent = fmtSecs(d.live_seconds) + " / " + S.session.cap_mins + "m"; } }
+      if (d.tokens_in !== undefined) $("#sessTokens").textContent = ((d.tokens_in||0) + (d.tokens_out||0)).toLocaleString();
+      break;
+    case "resumed": toast("Resumed after " + d.reason + " (attempt " + d.attempt + ").", "ok"); break;
+    case "cap_reached": toast("Daily voice cap reached (" + d.mins + " min). Session closed — the ledger is safe.", "warn", 7000); break;
+    case "idle_close": toast("Session closed after " + d.secs + "s idle. Press Reconnect to wake him.", "info"); break;
+    case "ended": setWsState("IDLE"); break;
+    case "activity": $("#ptt").classList.toggle("held", !!d.started); break;
+    case "error": toast(d.message, "err", 6500); snd.error(); addSystemCard(d.message + (d.hint ? " — " + d.hint : "")); break;
+    case "pong": break;
+  }
+}
+/* ================= transcript ================= */
+const TR = () => $("#transcript");
+function nearBottom() { const t = TR(); return t.scrollHeight - t.scrollTop - t.clientHeight < 90; }
+function scrollBottom(force) { const t = TR(); if (force || nearBottom()) t.scrollTop = t.scrollHeight; else $("#jumpBtn").style.display = "block"; }
+function addSystemCard(text) { const c = el("div", "tcard system", text); TR().appendChild(c); scrollBottom(); }
+function appendTranscript(d) {
+  if (d.role === "system") { addSystemCard(d.text); return; }
+  const stick = nearBottom();
+  let card = S.live[d.role];
+  if (!card || !d.stream) {
+    card = el("div", "tcard " + d.role + (d.off_record ? " interrupted" : ""));
+    card.appendChild(el("span", "who", d.role === "user" ? (d.source === "rehearsal_mic" ? "you · mic" : "you") : "Jarvis" + (d.path === "text" ? " · text" : "")));
+    card.appendChild(el("span", "body"));
+    TR().appendChild(card);
+    if (d.path) card.dataset.path = d.path;
+    if (d.stream) S.live[d.role] = card;
+  }
+  const body = card.querySelector(".body");
+  body.textContent = (body.textContent || "") + d.text;
+  if (d.role === "jarvis" && d.stream && (S.mode === "rehearsal" || d.path === "text") && S.browserVoice && !S.muted) { card.dataset.ttsStreamed = "1"; TtsQueue.pushChunk(d.text); }
+
+  if (stick) scrollBottom(true);
+}
+function showThinking() {
+  if (S._think) S._think.remove();
+  const c = el("div", "tcard thinking"); c.appendChild(el("span", null, "Jarvis is thinking")); c.appendChild(el("span", "dots"));
+  TR().appendChild(c); S._think = c; scrollBottom();
+}
+function finalizeLive() {
+  if (S._think) { S._think.remove(); S._think = null; }
+  const j = S.live.jarvis;
+  if (j && (S.mode === "rehearsal" || j.dataset.path === "text") && S.browserVoice && !S.muted) {
+    const txt = (j.querySelector(".body")?.textContent || "").trim();
+    if (txt) {
+      if (j.dataset.ttsStreamed === "1") { TtsQueue.flushRemainder(); } else { TtsQueue.stop(); TtsQueue.enqueue(txt); }
+    }
+  }
+  S.live.user = null; S.live.jarvis = null;
+}
+function addToolCard(d) {
+  if (S.live.jarvis) {
+    const preTxt = (S.live.jarvis.querySelector(".body")?.textContent || "").trim();
+    if (preTxt && (S.mode === "rehearsal" || S.live.jarvis.dataset.path === "text") && S.browserVoice && !S.muted) {
+      TtsQueue.enqueue(preTxt);
+    }
+    S.live.jarvis = null;
+  }
+  const c = el("div", "tcard tool"); c.dataset.tid = d.id || d.name;
+  const head = el("div"); head.appendChild(el("span", "tname", "⚙ " + d.name));
+  head.appendChild(el("span", "tstatus wait", "running"));
+  c.appendChild(head);
+  const pre = el("pre", null, JSON.stringify(d.args || {}, null, 1));
+  c.appendChild(pre); c._pre = pre; c._head = head;
+  TR().appendChild(c); scrollBottom();
+}
+function updateToolCard(d) {
+  const c = $$(".tcard.tool", TR()).reverse().find(x => x.dataset.tid === (d.id || d.name)) || $$(".tcard.tool", TR()).pop();
+  if (!c) return;
+  const st = c._head.querySelector(".tstatus");
+  const ok = d.result && d.result.ok;
+  st.textContent = ok ? "done" : (d.result && d.result.status === "needs_confirmation" ? "awaiting yes" : "failed");
+  st.className = "tstatus " + (ok ? "ok" : "bad");
+  c._pre.textContent = JSON.stringify(d.result, null, 1).slice(0, 1600);
+  if (ok) snd.done();
+  scrollBottom();
+}
+function addConfirmCard(d) {
+  const c = el("div", "tcard confirm"); c.dataset.cid = d.id;
+  c.appendChild(el("span", "who", "approval required · " + d.tool));
+  c.appendChild(el("div", "say", d.say || "This changes data. Approve?"));
+  const row = el("div", "row");
+  const yes = el("button", "btn sm good", "Yes, do it");
+  const no = el("button", "btn sm danger", "No");
+  const cd = el("span", "cd", "3:00");
+  row.appendChild(yes); row.appendChild(no); row.appendChild(cd);
+  c.appendChild(row); TR().appendChild(c); scrollBottom(true);
+  let left = d.expires_in || 180;
+  const timer = setInterval(() => {
+    left--; cd.textContent = fmtSecs(left);
+    if (left <= 0) { clearInterval(timer); expireConfirm(d.id); }
+  }, 1000);
+  S.confirmTimers[d.id] = timer;
+  const done = () => { clearInterval(timer); delete S.confirmTimers[d.id]; yes.disabled = no.disabled = true; };
+  yes.onclick = () => { done(); c.appendChild(el("div", "lbl", "approved ✓"));
+    if (d.text_path) api("/api/confirm", { method: "POST", body: JSON.stringify({ token: d.token, approve: true }) }).then(r => toast(r.ok ? "Approved and executed." : "Approval failed.", r.ok ? "ok" : "err")).catch(e => toast(e.message, "err"));
+    else wsSend({ type: "confirm", id: d.id, approve: true }); };
+  no.onclick = () => { done(); c.appendChild(el("div", "lbl", "declined"));
+    if (d.text_path) api("/api/confirm", { method: "POST", body: JSON.stringify({ token: d.token, approve: false }) }).catch(() => {});
+    else wsSend({ type: "confirm", id: d.id, approve: false }); };
+}
+function expireConfirm(id) {
+  clearInterval(S.confirmTimers[id]); delete S.confirmTimers[id];
+  const c = $$(".tcard.confirm", TR()).find(x => x.dataset.cid === id);
+  if (c) { c.style.opacity = ".5"; $$("button", c).forEach(b => b.disabled = true); c.appendChild(el("div", "lbl", "expired")); }
+}
+/* ================= PTT & composer ================= */
+let _uniRec = null, _uniChunks = [], _uniDownAt = 0, _uniLocked = false, _uniStream = null, _uniCtx = null, _uniRaf = 0;
+
+async function _startUnifiedMic() {
+  TtsQueue.stop();
+  _uniStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+  _uniChunks = [];
+  const mime = MediaRecorder.isTypeSupported("audio/webm;codecs=opus") ? "audio/webm;codecs=opus" : "audio/webm";
+  _uniRec = new MediaRecorder(_uniStream, { mimeType: mime });
+  _uniRec.ondataavailable = e => { if (e.data && e.data.size > 0) _uniChunks.push(e.data); };
+  _uniRec.start(100);
+  // Live mic meter animation
+  try {
+    _uniCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = _uniCtx.createMediaStreamSource(_uniStream);
+    const an = _uniCtx.createAnalyser(); an.fftSize = 256;
+    src.connect(an);
+    const buf = new Uint8Array(an.frequencyBinCount);
+    const tick = () => {
+      if (!_uniRec || _uniRec.state !== "recording") { $("#micFill").style.width = "0%"; return; }
+      an.getByteTimeDomainData(buf);
+      let sum = 0;
+      for (let i = 0; i < buf.length; i++) { const v = (buf[i] - 128) / 128; sum += v * v; }
+      const rms = Math.min(100, Math.round(Math.sqrt(sum / buf.length) * 380));
+      $("#micFill").style.width = rms + "%";
+      _uniRaf = requestAnimationFrame(tick);
+    };
+    tick();
+  } catch (e) {}
+}
+
+async function _stopAndSendUnifiedMic() {
+  cancelAnimationFrame(_uniRaf);
+  $("#micFill").style.width = "0%";
+  $("#ptt").classList.remove("held");
+  $("#ptt").textContent = "🎙 Hold / Tap to Talk";
+  if (!_uniRec) return;
+  const rec = _uniRec;
+  _uniRec = null;
+  _uniLocked = false;
+  $("#micHint").textContent = "transcribing…";
+  await new Promise(resolve => {
+    rec.onstop = resolve;
+    try { rec.stop(); } catch (e) { resolve(); }
+  });
+  if (_uniStream) { _uniStream.getTracks().forEach(t => t.stop()); _uniStream = null; }
+  if (_uniCtx) { try { _uniCtx.close(); } catch (e) {} _uniCtx = null; }
+  const blob = new Blob(_uniChunks, { type: "audio/webm" });
+  _uniChunks = [];
+  if (blob.size < 500) {
+    $("#micHint").textContent = "hold or tap mic to speak · or type below";
+    return;
+  }
+  const fd = new FormData();
+  fd.append("audio", blob, "voice.webm");
+  try {
+    const r = await fetch("/api/stt", { method: "POST", body: fd });
+    const d = await r.json();
+    if (d.ok && d.text && d.text.trim()) {
+      $("#micHint").textContent = "hold or tap mic to speak · or type below";
+      const inp = $("#msg") || $("#textIn") || document.querySelector("textarea, input[type='text']");
+      if (inp) {
+        inp.value = d.text.trim();
+        if (typeof sendText === "function") sendText();
+      }
+    } else {
+      toast(d.error || "Didn't catch that — try again.", "warn", 2000);
+      $("#micHint").textContent = "hold or tap mic to speak · or type below";
+    }
+  } catch (e) {
+    toast("Voice transcription failed.", "warn", 2000);
+    $("#micHint").textContent = "hold or tap mic to speak · or type below";
+  }
+}
+
+async function pttDown() {
+  TtsQueue.stop();
+  if (_uniLocked && _uniRec) {
+    await _stopAndSendUnifiedMic();
+    return;
+  }
+  _uniDownAt = Date.now();
+  S.pttActive = true;
+  $("#ptt").classList.add("held");
+  $("#ptt").textContent = "🔴 Listening…";
+  $("#micHint").textContent = "speaking… release (or tap again) to send";
+  try {
+    await _startUnifiedMic();
+    if (!S.pttActive && !_uniLocked) {
+      await _stopAndSendUnifiedMic();
+    }
+  } catch (e) {
+    S.pttActive = false;
+    $("#ptt").classList.remove("held");
+    $("#ptt").textContent = "🎙 Hold / Tap to Talk";
+    toast("Microphone permission denied.", "warn", 2200);
+  }
+}
+
+function pttUp() {
+  if (!S.pttActive && !_uniRec) return;
+  S.pttActive = false;
+  // Quick tap (<350ms) locks hands-free recording until tapped again; hold (>350ms) sends on release
+  if (Date.now() - _uniDownAt < 350 && _uniRec) {
+    _uniLocked = true;
+    $("#ptt").textContent = "⏹ Tap to Send";
+    $("#micHint").textContent = "hands-free recording… tap mic again to send";
+    return;
+  }
+  _stopAndSendUnifiedMic();
+}
+function sendText(text, source="typed") {
+  text = (text || "").trim(); if (!text) return;
+  S.live.user = null; S.live.jarvis = null;
+  wsSend({ type: "text", text, source, off_record: S.offRecord });
+  $("#textInput").value = "";
+}
+/* ================= orb (single rAF, damped, dpr-capped) ================= */
+const Orb = {
+  cv: null, cx: null, t: 0, last: 0, mic: 0, play: 0, parts: [], raf: 0,
+  init() {
+    this.cv = $("#orb"); this.cx = this.cv.getContext("2d");
+    for (let i = 0; i < 26; i++) this.parts.push({ a: Math.random() * Math.PI * 2, r: 0.62 + Math.random() * 0.3, s: 0.15 + Math.random() * 0.5, z: Math.random() * Math.PI * 2 });
+    this.resize(); window.addEventListener("resize", () => this.resize());
+    document.addEventListener("visibilitychange", () => { if (document.hidden) cancelAnimationFrame(this.raf); else { this.last = performance.now(); this.raf = requestAnimationFrame((t) => this.frame(t)); } });
+    this.last = performance.now(); this.raf = requestAnimationFrame((t) => this.frame(t));
+  },
+  resize() {
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const w = this.cv.clientWidth || 320;
+    this.cv.width = w * dpr; this.cv.height = w * dpr;
+    this.cx.setTransform(dpr, 0, 0, dpr, 0, 0); this.w = w;
+  },
+  frame(now) {
+    const dt = Math.min(0.05, (now - this.last) / 1000); this.last = now; this.t += dt;
+    const cx = this.cx, w = this.w, c = w / 2;
+    const target = S.wsState === "LIVE" ? Math.max(S.micLevel * 2.4, AudioEngine.level()) : 0;
+    this.mic += (S.micLevel * 2.4 - this.mic) * 0.15;
+    this.play += (target - this.play) * 0.12;
+    const lvl = Math.min(1, Math.max(this.mic, this.play));
+    const col = STATE_COLOR[S.orbState] || "#c9a227";
+    cx.clearRect(0, 0, w, w);
+    // core glow
+    const g = cx.createRadialGradient(c, c, 4, c, c, c * (0.62 + lvl * 0.2));
+    g.addColorStop(0, col + "55"); g.addColorStop(0.55, col + "18"); g.addColorStop(1, "transparent");
+    cx.fillStyle = g; cx.beginPath(); cx.arc(c, c, c * 0.95, 0, 7); cx.fill();
+    // breathing rings
+    for (let i = 0; i < 3; i++) {
+      const r = c * (0.34 + i * 0.16) + Math.sin(this.t * (1.1 + i * 0.4) + i) * (3 + lvl * 14) + lvl * 10;
+      cx.beginPath(); cx.arc(c, c, r, 0, 7);
+      cx.strokeStyle = col + (i === 0 ? "cc" : i === 1 ? "66" : "33");
+      cx.lineWidth = i === 0 ? 2 : 1.2; cx.stroke();
+    }
+    // rotating dashed halo
+    cx.save(); cx.translate(c, c); cx.rotate(this.t * 0.25);
+    cx.setLineDash([3, 9]); cx.beginPath(); cx.arc(0, 0, c * 0.86, 0, 7);
+    cx.strokeStyle = col + "44"; cx.lineWidth = 1; cx.stroke(); cx.restore();
+    // particles
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduced) for (const p of this.parts) {
+      p.a += dt * p.s * (0.4 + lvl * 2);
+      const rr = c * p.r + Math.sin(this.t * 0.8 + p.z) * 5;
+      const x = c + Math.cos(p.a) * rr, y = c + Math.sin(p.a) * rr;
+      cx.beginPath(); cx.arc(x, y, 1.1 + lvl * 1.6, 0, 7);
+      cx.fillStyle = col + "88"; cx.fill();
+    }
+    // waveform across the core when speaking/listening
+    if (lvl > 0.02) {
+      cx.beginPath();
+      for (let x = -c * 0.4; x <= c * 0.4; x += 3) {
+        const y = c + Math.sin(x * 0.09 + this.t * 7) * lvl * 16 * Math.cos(x / (c * 0.55));
+        x === -c * 0.4 ? cx.moveTo(x + c, y) : cx.lineTo(x + c, y);
+      }
+      cx.strokeStyle = col; cx.lineWidth = 1.6; cx.stroke();
+    }
+    $("#micFill").style.width = Math.min(100, this.mic * 100) + "%";
+    this.raf = requestAnimationFrame((t) => this.frame(t));
+  }
+};
+/* ================= GRADES ================= */
+function renderGrades() {
+  const d = S.dash; if (!d) return;
+  const G = $("#gpaCards"); G.innerHTML = "";
+  const g = d.gpa || {};
+  const stat = (lbl, v, s, cls) => { const n = el("div", "stat " + (cls||"")); n.appendChild(el("div", "lbl", lbl)); n.appendChild(el("div", "v", v)); if (s) n.appendChild(el("div", "s", s)); return n; };
+  if (g.ok) {
+    G.appendChild(stat("Projected GPA", g.projected_gpa, "if expectations hold"));
+    G.appendChild(stat("Floor", g.floor_gpa, "zeros from here", "cy"));
+    G.appendChild(stat("Ceiling", g.ceiling_gpa, "perfect finish", "em"));
+    G.appendChild(stat("Target", g.target_gpa != null ? g.target_gpa : "—", g.say || "", "vi"));
+  } else G.appendChild(stat("GPA", "—", g.say || "not configured"));
+  const W = $("#gradeWarns"); W.innerHTML = "";
+  const warns = [];
+  if (d.allocations && d.allocations.ok && !d.allocations.all_courses_valid) d.allocations.courses.filter(c => !c.ok).forEach(c => warns.push(c.say));
+  (Array.isArray(d.grades) ? d.grades : []).forEach(x => { if (x.warning) warns.push(x.code + ": " + x.warning); });
+  if (d.rescue && d.rescue.done) {
+    const b = el("div", "warnbanner"); b.style.borderColor = "rgba(52,211,153,.45)"; b.style.background = "rgba(52,211,153,.06)"; b.style.color = "var(--emerald)";
+    b.textContent = "✓ Old life rescued from " + d.rescue.source + ": " + Object.entries(d.rescue.imported || {}).map(([k, v]) => v + " " + k).join(", ") + ". Backups are in backups/.";
+    W.appendChild(b);
+  }
+  warns.forEach(w => W.appendChild(el("div", "warnbanner", "⚠ " + w)));
+  const C = $("#courseGrid"); C.innerHTML = "";
+  const feas = {}; if (d.feasibility && d.feasibility.ok) d.feasibility.courses.forEach(c => feas[c.code] = c);
+  const grades = Array.isArray(d.grades) ? d.grades : [];
+  if (!grades.length) { C.appendChild(el("div", "empty", (d.grades && d.grades.say) || "No courses yet — run the setup wizard.")); }
+  const fwC = $("#fwCourse"); fwC.innerHTML = "";
+  grades.forEach(m => {
+    const card = el("div", "card course brassline");
+    const top = el("div", "top");
+    top.appendChild(el("span", "code", m.code)); top.appendChild(el("span", "cname", m.name || ""));
+    top.appendChild(el("span", "big", m.projected_grade));
+    card.appendChild(top);
+    const bar = el("div", "bar");
+    const ceil = el("i", "ceil"); ceil.style.width = Math.min(100, m.ceiling_pct) + "%";
+    const bank = el("i", "bank"); bank.style.width = Math.min(100, (m.obtained_sum / (m.max_total || 100)) * 100) + "%";
+    bar.appendChild(ceil); bar.appendChild(bank); card.appendChild(bar);
+    card.appendChild(el("div", "barlbl", "banked " + m.obtained_sum + " / " + m.max_total + "  ·  projected " + m.projected_pct + "%  ·  ceiling " + m.ceiling_pct + "% (" + m.ceiling_grade + ")"));
+    const f = feas[m.code];
+    if (f) {
+      card.appendChild(el("div", "say", f.say));
+      const chips = el("div", "chips");
+      f.tiers.forEach(t => {
+        let label = t.letter;
+        if (t.verdict === "reachable" && t.required_pct_of_remaining != null) label += " · " + t.required_pct_of_remaining + "% left";
+        const ch = el("span", "chip " + t.verdict, label);
+        ch.title = t.verdict === "secured" ? "Secured even with zeros from here" : t.verdict === "reachable" ? "Needs " + t.required_from_remaining + " more points" : "Mathematically out of reach";
+        chips.appendChild(ch);
+      });
+      card.appendChild(chips);
+    }
+    const toggle = el("button", "btn sm", "Marks ▾");
+    const box = el("div", "assess");
+    toggle.onclick = async () => {
+      box.classList.toggle("open");
+      toggle.textContent = box.classList.contains("open") ? "Marks ▴" : "Marks ▾";
+      if (box.classList.contains("open") && !box.dataset.loaded) { box.dataset.loaded = "1"; await loadAssessments(m.code, box); }
+    };
+    card.appendChild(toggle); card.appendChild(box);
+    C.appendChild(card);
+    fwC.appendChild(el("option", null, m.code)).value = m.code;
+  });
+  const fwL = $("#fwLetter");
+  if (!fwL.options.length) {
+    const letters = (d.feasibility && d.feasibility.ok && d.feasibility.courses[0]) ? d.feasibility.courses[0].tiers.map(t => t.letter) : ["A","B","C"];
+    letters.forEach(l => fwL.appendChild(el("option", null, l)).value = l);
+    fwL.value = letters.includes("B") ? "B" : letters[0];
+  }
+}
+async function loadAssessments(code, box) {
+  box.innerHTML = "";
+  try {
+    const d = await api("/api/assessments?course=" + encodeURIComponent(code));
+    const head = el("div", "arow"); head.style.color = "var(--faint)";
+    ["assessment", "max", "obtained", "status", ""].forEach(h => head.appendChild(el("span", "lbl", h)));
+    box.appendChild(head);
+    d.assessments.forEach(a => {
+      const row = el("div", "arow");
+      row.appendChild(el("span", "an", a.label + " · " + a.type));
+      row.appendChild(el("span", null, a.max_marks));
+      const inp = el("input"); inp.type = "number"; inp.step = "0.25"; inp.min = "0"; inp.value = a.obtained; inp.setAttribute("aria-label", "Obtained marks for " + a.label);
+      const sel = el("select"); ["Upcoming","In Progress","Completed","Missed","Cancelled"].forEach(s => sel.appendChild(el("option", null, s)).value = s);
+      sel.value = a.status;
+      const save = el("button", "btn sm", "Save");
+      save.onclick = async () => {
+        save.disabled = true;
+        try {
+          const r = await api("/api/assessments", { method: "POST", body: JSON.stringify({ course_code: code, label: a.label, type_: a.type, max_marks: a.max_marks, obtained: parseFloat(inp.value) || 0, expected: a.expected || 0, status: sel.value }) });
+          toast(r.ok ? "Mark recorded — grades recomputed." : "Could not record mark.", r.ok ? "ok" : "err");
+          if (r.undo_token) offerUndo("Mark change undone.", r.undo_token);
+          await refreshDash();
+        } catch (e) { toast(e.message, "err"); }
+        save.disabled = false;
+      };
+      row.appendChild(inp); row.appendChild(sel); row.appendChild(save);
+      box.appendChild(row);
+    });
+  } catch (e) { box.appendChild(el("div", "empty", "Could not load marks: " + e.message)); }
+}
+async function refreshDash() {
+  try { S.dash = await api("/api/dashboard"); renderGrades(); renderTodayExtras(); } catch (e) {}
+}
+/* ================= TODAY / tasks ================= */
+async function loadTasks() {
+  const f = S.filters;
+  const p = new URLSearchParams();
+  if (f.q) p.set("q", f.q); if (f.status) p.set("status", f.status); if (f.course) p.set("course", f.course); p.set("sort", f.sort);
+  try { const d = await api("/api/tasks?" + p); S.tasks = d.tasks; renderTasks(); }
+  catch (e) { $("#taskList").innerHTML = ""; $("#taskList").appendChild(el("div", "empty", "Could not load tasks: " + e.message)); }
+}
+function renderTasks() {
+  const L = $("#taskList"); L.innerHTML = "";
+  if (!S.tasks.length) { L.appendChild(el("div", "empty", "The ledger is empty, sir. A clear desk — rare and suspicious.")); return; }
+  S.tasks.forEach(t => {
+    const row = el("div", "task" + (t.status === "completed" ? " done" : ""));
+    row.draggable = true; row.dataset.id = t.id;
+    const cb = el("input"); cb.type = "checkbox"; cb.checked = S.sel.has(t.id); cb.setAttribute("aria-label", "Select task");
+    cb.onclick = (e) => { e.stopPropagation(); cb.checked ? S.sel.add(t.id) : S.sel.delete(t.id); renderBulk(); };
+    row.appendChild(cb);
+    row.appendChild(el("span", "grip", "⠿"));
+    const mid = el("div"); mid.style.minWidth = "0"; mid.style.flex = "1";
+    mid.appendChild(el("div", "tt", t.title));
+    const meta = el("div", "meta");
+    if (t.course_code) meta.appendChild(el("span", "tag course", t.course_code));
+    const dl = relDeadline(t.deadline_at);
+    if (dl) meta.appendChild(el("span", "tag due" + (dl.hot ? " hot" : ""), dl.text));
+    if (t.assigned_window) meta.appendChild(el("span", "tag slot", t.assigned_window + (t.assigned_location ? " @ " + t.assigned_location : "")));
+    const step = el("span", "stepper");
+    const minus = el("button", null, "−"), plus = el("button", null, "+");
+    const mins = el("span", null, t.est_mins + "m");
+    minus.onclick = (e) => { e.stopPropagation(); patchTask(t.id, { est_mins: Math.max(5, t.est_mins - 15) }); };
+    plus.onclick = (e) => { e.stopPropagation(); patchTask(t.id, { est_mins: t.est_mins + 15 }); };
+    step.appendChild(minus); step.appendChild(mins); step.appendChild(plus);
+    meta.appendChild(step);
+    meta.appendChild(el("span", "pill " + t.status, t.status.replace("_", " ")));
+    mid.appendChild(meta); row.appendChild(mid);
+    const acts = el("div", "acts");
+    const done = el("button", "btn sm good", "✓"); done.title = "Mark complete";
+    done.onclick = (e) => { e.stopPropagation(); patchTask(t.id, { status: t.status === "completed" ? "pending" : "completed" }); };
+    const edit = el("button", "btn sm", "✎"); edit.title = "Edit";
+    edit.onclick = (e) => { e.stopPropagation(); openTaskDrawer(t); };
+    const del = el("button", "btn sm danger", "🗑"); del.title = "Delete (undoable)";
+    del.onclick = (e) => { e.stopPropagation(); confirmDeleteTask(t); };
+    acts.appendChild(done); acts.appendChild(edit); acts.appendChild(del);
+    row.appendChild(acts);
+    row.addEventListener("dragstart", (e) => { row.classList.add("dragging"); e.dataTransfer.setData("text/plain", t.id); e.dataTransfer.effectAllowed = "move"; });
+    row.addEventListener("dragend", () => row.classList.remove("dragging"));
+    row.addEventListener("dragover", (e) => { e.preventDefault(); row.classList.add("dropover"); });
+    row.addEventListener("dragleave", () => row.classList.remove("dropover"));
+    row.addEventListener("drop", async (e) => {
+      e.preventDefault(); row.classList.remove("dropover");
+      const fromId = parseInt(e.dataTransfer.getData("text/plain"), 10);
+      if (fromId === t.id) return;
+      const ids = S.tasks.map(x => x.id);
+      const fi = ids.indexOf(fromId), ti = ids.indexOf(t.id);
+      ids.splice(fi, 1); ids.splice(ti, 0, fromId);
+      try {
+        await Promise.all(ids.map((id, i) => api("/api/tasks/" + id, { method: "PATCH", body: JSON.stringify({ priority: i + 1 }) })));
+        S.filters.sort = "priority"; $("#taskSort").value = "priority";
+        toast("Priority order saved.", "ok", 2200); await loadTasks();
+      } catch (err) { toast(err.message, "err"); }
+    });
+    L.appendChild(row);
+  });
+}
+function renderBulk() {
+  const n = S.sel.size;
+  $("#bulkBar").classList.toggle("show", n > 0);
+  $("#bulkCount").textContent = n + " selected";
+}
+async function patchTask(id, fields) {
+  try { await api("/api/tasks/" + id, { method: "PATCH", body: JSON.stringify(fields) }); await loadTasks(); refreshDash(); }
+  catch (e) { toast(e.message, "err"); }
+}
+function confirmDeleteTask(t) {
+  openModal("Cancel this task?", null, [
+    { label: "Keep it", cls: "btn", fn: closeModal },
+    { label: "Delete", cls: "btn danger", fn: async () => {
+      closeModal();
+      try { const r = await api("/api/tasks/" + t.id, { method: "DELETE" }); await loadTasks(); refreshDash(); offerUndo("“" + t.title + "” cancelled.", r.undo_token); }
+      catch (e) { toast(e.message, "err"); } } }
+  ], el("div", null, "“" + t.title + "” will be cancelled. You'll have 30 seconds to undo."));
+}
+function offerUndo(msg, token) {
+  if (!token) return;
+  S.undo = token;
+  $("#undoMsg").textContent = msg;
+  $("#undoToast").classList.add("show");
+  let left = 30; $("#undoCd").textContent = left + "s";
+  clearInterval(S.undoTimer);
+  S.undoTimer = setInterval(() => { left--; $("#undoCd").textContent = left + "s"; if (left <= 0) hideUndo(); }, 1000);
+}
+function hideUndo() { clearInterval(S.undoTimer); S.undo = null; $("#undoToast").classList.remove("show"); }
+function renderTodayExtras() {
+  const d = S.dash; if (!d) return;
+  const B = $("#blockList"); B.innerHTML = "";
+  const blocks = (d.today && d.today.blocks) || [];
+  if (!blocks.length) B.appendChild(el("div", "empty", "No blocks set for " + (d.today ? d.today.day : "today") + "."));
+  blocks.forEach(b => {
+    const row = el("div", "item"); row.style.cssText = "display:flex;gap:10px;padding:7px 0;border-bottom:1px dashed var(--line2);font-size:13px";
+    row.appendChild(el("span", "tag slot", b.start_time + "–" + b.end_time));
+    row.appendChild(el("span", null, b.type + (b.location ? " @ " + b.location : "") + (b.course_focus ? " · " + b.course_focus : "")));
+    B.appendChild(row);
+  });
+  const s = d.state || {};
+  $("#stateLine").textContent = "State (" + (s.age_minutes != null ? Math.round(s.age_minutes) + " min ago" : "?") + "): " + (s.location || "?") + " · energy " + (s.energy||"?") + "/5 · " + (s.fed ? "fed" : "hungry") + " · stress " + (s.stress||"?") + "/5" + (s.is_stale ? " · STALE — Jarvis will re-ask" : "");
+}
+/* task drawer */
+function openTaskDrawer(t) {
+  S.drawer = { kind: "task", id: t ? t.id : null };
+  $("#drawerTitle").textContent = t ? "Edit task" : "New task";
+  const B = $("#drawerBody"); B.innerHTML = "";
+  const fields = [
+    ["title", "Title", "text", t ? t.title : ""],
+    ["course_code", "Course code", "text", t ? (t.course_code || "") : ""],
+    ["est_mins", "Estimate (minutes)", "number", t ? t.est_mins : 45],
+    ["deadline_hint", "Deadline (e.g. tomorrow 9am, Nov 18)", "text", t ? (t.due_date || "") : ""],
+    ["assigned_date", "Assigned date (YYYY-MM-DD)", "text", t ? (t.assigned_date || "") : ""],
+    ["assigned_window", "Window (e.g. 18:00-19:30)", "text", t ? (t.assigned_window || "") : ""],
+    ["assigned_location", "Location", "text", t ? (t.assigned_location || "") : ""],
+    ["energy_need", "Energy needed (1–5)", "number", t ? t.energy_need : 3],
+    ["priority", "Priority (lower = higher)", "number", t ? t.priority : 2]
+  ];
+  fields.forEach(([k, lbl, type, val]) => {
+    const f = el("div", "field"); f.appendChild(el("span", "lbl", lbl));
+    const i = el("input"); i.type = type; i.value = val == null ? "" : val; i.dataset.k = k;
+    f.appendChild(i); B.appendChild(f);
+  });
+  $("#drawer").classList.add("show"); $("#scrim").classList.add("show");
+}
+async function saveDrawer() {
+  const data = {};
+  $$("#drawerBody input").forEach(i => { if (i.value !== "") data[i.dataset.k] = i.type === "number" ? parseFloat(i.value) : i.value; });
+  try {
+    if (S.drawer.kind === "task") {
+      if (!data.title) { toast("A task needs a title.", "warn"); return; }
+      if (S.drawer.id) await api("/api/tasks/" + S.drawer.id, { method: "PATCH", body: JSON.stringify(data) });
+      else await api("/api/tasks", { method: "POST", body: JSON.stringify(data) });
+      toast("Task saved.", "ok"); await loadTasks(); refreshDash();
+    } else if (S.drawer.kind === "fact") {
+      await api("/api/facts/" + S.drawer.id, { method: "PATCH", body: JSON.stringify(data) });
+      toast("Memory updated (old value kept in history).", "ok"); await loadFacts();
+    }
+    closeDrawer();
+  } catch (e) { toast(e.message, "err"); }
+}
+function closeDrawer() { $("#drawer").classList.remove("show"); if (!$("#modal").classList.contains("show")) $("#scrim").classList.remove("show"); }
+/* ================= MEMORY ================= */
+async function loadFacts() {
+  const p = new URLSearchParams();
+  if (S.factQ) p.set("q", S.factQ); if (S.factDomain) p.set("domain", S.factDomain);
+  try {
+    const d = await api("/api/facts?" + p); S.facts = d.facts; renderFacts();
+    const doms = Array.from(new Set(S.facts.map(f => f.domain)));
+    const sel = $("#factDomain"); const cur = sel.value;
+    sel.innerHTML = ""; sel.appendChild(el("option", null, "All domains")).value = "";
+    doms.forEach(dm => sel.appendChild(el("option", null, dm)).value = dm);
+    sel.value = cur;
+  } catch (e) { toast(e.message, "err"); }
+}
+function renderFacts() {
+  const L = $("#factList"); L.innerHTML = "";
+  if (!S.facts.length) { L.appendChild(el("div", "empty", "Nothing remembered yet. Tell Jarvis something worth keeping.")); return; }
+  const now = Date.now();
+  S.facts.forEach(f => {
+    const c = el("div", "fact");
+    c.appendChild(el("div", "fk", "[" + f.domain + "] " + f.key));
+    c.appendChild(el("div", "fv", f.value));
+    const m = el("div", "fm");
+    m.appendChild(el("span", "tag src", f.source));
+    if (f.sensitivity !== "normal") m.appendChild(el("span", "tag " + f.sensitivity, f.sensitivity));
+    m.appendChild(el("span", "stars", "★".repeat(f.importance) + "☆".repeat(5 - f.importance)));
+    const ver = f.last_verified_at || f.created_at;
+    if (ver && f.verify_after_days != null && now - new Date(ver).getTime() > f.verify_after_days * 864e5) m.appendChild(el("span", "tag stale", "stale — re-verify"));
+    const edit = el("button", "btn sm", "✎"); edit.style.marginLeft = "auto";
+    edit.onclick = () => {
+      S.drawer = { kind: "fact", id: f.id };
+      $("#drawerTitle").textContent = "Edit memory";
+      const B = $("#drawerBody"); B.innerHTML = "";
+      [["value", "Value (editing supersedes — history is kept)", "text", f.value],
+       ["importance", "Importance (1–5)", "number", f.importance]].forEach(([k, lbl, type, val]) => {
+        const fd = el("div", "field"); fd.appendChild(el("span", "lbl", lbl));
+        const i = el("input"); i.type = type; i.value = val; i.dataset.k = k; fd.appendChild(i); B.appendChild(fd);
+      });
+      const fs = el("div", "field"); fs.appendChild(el("span", "lbl", "Sensitivity"));
+      const ss = el("select"); ss.dataset.k = "sensitivity";
+      ["normal","private","vault"].forEach(x => ss.appendChild(el("option", null, x)).value = x);
+      ss.value = f.sensitivity; fs.appendChild(ss); B.appendChild(fs);
+      $("#drawer").classList.add("show"); $("#scrim").classList.add("show");
+    };
+    const del = el("button", "btn sm danger", "🗑");
+    del.onclick = () => openModal("Retire this memory?", null, [
+      { label: "Keep", cls: "btn", fn: closeModal },
+      { label: "Retire", cls: "btn danger", fn: async () => { closeModal();
+        try { const r = await api("/api/facts/" + f.id, { method: "DELETE" }); await loadFacts(); offerUndo("Memory retired.", r.undo_token); }
+        catch (e) { toast(e.message, "err"); } } }
+    ], el("div", null, "[" + f.domain + "] " + f.key + " — it stays in history, and you can undo for 30 seconds."));
+    m.appendChild(edit); m.appendChild(del);
+    c.appendChild(m); L.appendChild(c);
+  });
+}
+async function loadCommits() {
+  try { const d = await api("/api/commitments"); S.commits = d.commitments; renderCommits(); } catch (e) {}
+}
+function renderCommits() {
+  const L = $("#commitList"); L.innerHTML = "";
+  const open = S.commits.filter(c => c.status === "open");
+  if (!open.length) L.appendChild(el("div", "empty", "No open promises. A gentleman's ledger, clean."));
+  open.forEach(c => {
+    const box = el("div", "commit");
+    box.appendChild(el("div", "cp", c.promise));
+    const m = el("div", "cm");
+    m.appendChild(el("span", "tag", "L" + c.ladder_level));
+    if (c.due_at) { const dl = relDeadline(c.due_at); if (dl) m.appendChild(el("span", "tag due" + (dl.hot ? " hot" : ""), dl.text)); }
+    const kept = el("button", "btn sm good", "Kept");
+    kept.onclick = async () => { try { await api("/api/commitments/" + c.id, { method: "PATCH", body: JSON.stringify({ status: "kept" }) }); toast("Promise kept. Well done, sir.", "ok"); loadCommits(); } catch (e) { toast(e.message, "err"); } };
+    const broken = el("button", "btn sm danger", "Broken");
+    broken.onclick = async () => { try { await api("/api/commitments/" + c.id, { method: "PATCH", body: JSON.stringify({ status: "broken" }) }); toast("Logged honestly. The weekly review will see it.", "warn"); loadCommits(); } catch (e) { toast(e.message, "err"); } };
+    m.appendChild(kept); m.appendChild(broken);
+    box.appendChild(m); L.appendChild(box);
+  });
+}
+/* ================= TOOLS ================= */
+async function loadTools() {
+  try {
+    const d = await api("/api/tools");
+    S.specs = d.tools;
+    $("#toolCoverage").textContent = d.coverage.specs + " specs · " + d.coverage.declared_to_gemini + " declared · " + (d.coverage.missing_handlers || []).length + " missing";
+    renderTools();
+  } catch (e) { toast(e.message, "err"); }
+}
+function renderTools() {
+  const G = $("#toolGrid"); G.innerHTML = "";
+  const list = S.specs.filter(s =>
+    (!S.toolQ || (s.name + " " + s.description).toLowerCase().includes(S.toolQ.toLowerCase())) &&
+    (!S.toolRisk || s.risk === S.toolRisk));
+  if (!list.length) G.appendChild(el("div", "empty", "No tools match."));
+  list.forEach(s => {
+    const c = el("div", "tool");
+    c.appendChild(el("div", "tn", s.name));
+    c.appendChild(el("div", "td", s.description));
+    const m = el("div", "tm");
+    m.appendChild(el("span", "tag " + s.risk, s.risk));
+    m.appendChild(el("span", "tag", s.behaviour));
+    m.appendChild(el("span", "tag", s.scheduling));
+    if (s.confirmation === "always") m.appendChild(el("span", "tag destructive", "needs yes"));
+    const run = el("button", "btn sm", "Run ▸"); run.style.marginLeft = "auto";
+    run.onclick = () => openRunModal(s);
+    m.appendChild(run);
+    c.appendChild(m); G.appendChild(c);
+  });
+}
+function openRunModal(s) {
+  const body = el("div");
+  const props = (s.params && s.params.properties) || {};
+  const req = (s.params && s.params.required) || [];
+  const inputs = {};
+  Object.entries(props).forEach(([k, p]) => {
+    const f = el("div", "field"); f.style.marginBottom = "10px";
+    f.appendChild(el("span", "lbl", k + (req.includes(k) ? " *" : "") + (p.type ? " · " + p.type : "")));
+    let i;
+    if (p.enum) { i = el("select"); i.appendChild(el("option", null, "—")).value = ""; p.enum.forEach(v => i.appendChild(el("option", null, String(v))).value = String(v)); }
+    else if (p.type === "boolean") { i = el("select"); ["true","false"].forEach(v => i.appendChild(el("option", null, v)).value = v); i.value = "false"; }
+    else { i = el("input"); i.type = (p.type === "integer" || p.type === "number") ? "number" : "text"; if (p.type === "integer") i.step = "1"; }
+    i.dataset.k = k; i.dataset.t = p.type || "string";
+    inputs[k] = i; f.appendChild(i); body.appendChild(f);
+  });
+  if (!Object.keys(props).length) body.appendChild(el("div", "empty", "No arguments — just run it."));
+  const out = el("pre"); out.style.display = "none"; body.appendChild(out);
+  const runBtn = el("button", "btn primary", s.confirmation === "always" ? "Request approval…" : "Run");
+  const doRun = async (confirmed) => {
+    const args = {};
+    Object.entries(inputs).forEach(([k, i]) => {
+      if (i.value === "") return;
+      args[k] = i.dataset.t === "integer" ? parseInt(i.value, 10) : i.dataset.t === "number" ? parseFloat(i.value) : i.dataset.t === "boolean" ? i.value === "true" : i.value;
+    });
+    runBtn.disabled = true;
+    try {
+      const r = await api("/api/tools/run", { method: "POST", body: JSON.stringify({ name: s.name, args, confirmed: !!confirmed }) });
+      if (r.status === "needs_confirmation") {
+        out.style.display = "none";
+        const say = el("div", "warnbanner", r.say || "This changes data. Approve?");
+        body.appendChild(say);
+        const yes = el("button", "btn good", "Yes, do it");
+        yes.onclick = async () => {
+          yes.disabled = true;
+          try {
+            const rr = await api("/api/confirm", { method: "POST", body: JSON.stringify({ token: r.confirm_token, approve: true }) });
+            say.remove(); yes.remove();
+            out.style.display = "block"; out.textContent = JSON.stringify(rr, null, 2);
+            toast(rr.ok ? "Approved and executed." : "Execution failed.", rr.ok ? "ok" : "err");
+            refreshDash(); loadTasks(); loadFacts();
+          } catch (e) { toast(e.message, "err"); yes.disabled = false; }
+        };
+        const no = el("button", "btn danger", "No");
+        no.onclick = () => { api("/api/confirm", { method: "POST", body: JSON.stringify({ token: r.confirm_token, approve: false }) }).catch(() => {}); say.remove(); yes.remove(); no.remove(); runBtn.disabled = false; };
+        body.appendChild(yes); body.appendChild(no);
+        snd.confirm();
+      } else {
+        out.style.display = "block"; out.textContent = JSON.stringify(r, null, 2);
+        toast(r.ok ? s.name + " ran cleanly." : s.name + " returned an error.", r.ok ? "ok" : "warn");
+        runBtn.disabled = false;
+        if (r.ok && s.risk !== "read") { refreshDash(); loadTasks(); loadFacts(); loadCommits(); }
+      }
+    } catch (e) { toast(e.message, "err"); runBtn.disabled = false; }
+  };
+  runBtn.onclick = () => doRun(false);
+  openModal("⚙ " + s.name, body, [{ label: "Close", cls: "btn", fn: closeModal }], null, runBtn);
+}
+/* ================= SYSTEM ================= */
+async function loadSettings() {
+  try {
+    const [d, roster] = await Promise.all([api("/api/settings"), api("/api/models").catch(() => ({ available: false }))]);
+    S.settings = d.settings; S.voices = d.voices; S.roster = roster;
+    const vs = $("#voiceSel"); vs.innerHTML = "";
+    d.voices.forEach(v => vs.appendChild(el("option", null, v)).value = v);
+    vs.value = d.settings.voice_name || "Aoede";
+    const mb = $("#modelBadge");
+    if (mb) mb.textContent = "brain: " + (d.settings.text_model || "gemini-3.5-flash-lite");
+    try {
+      const lv = await api("/api/tts/voices");
+      const lsel = $("#localVoiceSel");
+      if (lsel && lv.voices) {
+        lsel.innerHTML = "";
+        lv.voices.forEach(v => lsel.appendChild(el("option", null, v.label)).value = v.id);
+        lsel.value = S.localVoice || lv.default || "af_heart";
+      }
+    } catch (e) {}
+    const G = $("#setGrid"); G.innerHTML = "";
+    const mk = (k, lbl, type, opts) => {
+      const f = el("div", "field"); if (type === "wide") { f.classList.add("wide"); type = "text"; }
+      f.appendChild(el("span", "lbl", lbl));
+      let i;
+      if (type === "range") {
+        i = el("input"); i.type = "range"; i.min = opts.min; i.max = opts.max; i.step = opts.step || 1; i.value = d.settings[k] || opts.min;
+        const v = el("span", "rangeval", i.value + (opts.unit || ""));
+        i.oninput = () => v.textContent = i.value + (opts.unit || "");
+        f.appendChild(i); f.appendChild(v);
+      } else if (type === "select") {
+        i = el("select"); opts.values.forEach(x => i.appendChild(el("option", null, x)).value = x); i.value = d.settings[k] || opts.values[0]; f.appendChild(i);
+      } else { i = el("input"); i.type = type; i.value = d.settings[k] || ""; f.appendChild(i); }
+      i.dataset.k = k; G.appendChild(f);
+    };
+    mk("voice_name", "Voice", "select", { values: d.voices });
+    const modelField = (k, lbl, method, excludeLive) => {
+      const f = el("div", "field"); f.appendChild(el("span", "lbl", lbl));
+      const cat = (roster.catalogue || []).filter(m => (m.actions || []).includes(method) &&
+        (!excludeLive || !m.id.includes("live")) && m.id.startsWith("gemini"));
+      let i;
+      if (roster.available && cat.length) {
+        i = el("select");
+        cat.forEach(m => { const o = el("option", null, m.display_name + " · " + m.id); o.value = m.id; i.appendChild(o); });
+        const cur = d.settings[k];
+        if (cur && !cat.some(m => m.id === cur)) { const o = el("option", null, cur + " (not on your key!)"); o.value = cur; i.insertBefore(o, i.firstChild); }
+        i.value = cur || (roster[k === "text_model" ? "text" : "live"] || cat[0].id);
+      } else { i = el("input"); i.type = "text"; i.value = d.settings[k] || ""; i.title = roster.reason || ""; }
+      i.dataset.k = k; f.appendChild(i); G.appendChild(f);
+    };
+    modelField("live_model", "Live model (voice)", "bidiGenerateContent", false);
+    modelField("text_model", "Text model", "generateContent", true);
+    mk("context_token_budget", "Wake token budget", "range", { min: 500, max: 8000, step: 100, unit: " tok" });
+    mk("live_minute_cap", "Daily voice cap", "range", { min: 10, max: 240, step: 5, unit: " min" });
+    mk("session_idle_close_secs", "Idle auto-close", "range", { min: 30, max: 600, step: 10, unit: " s" });
+    mk("quiet_start", "Quiet hours start", "text");
+    mk("quiet_end", "Quiet hours end", "text");
+    mk("nag_budget", "Daily nudge budget", "range", { min: 0, max: 15, step: 1 });
+    mk("accountability_academics", "Accountability · academics", "select", { values: ["L1","L2","L3","L4"] });
+    const af = el("div", "field wide");
+    af.appendChild(el("span", "lbl", roster.available
+      ? ("Roster: " + (roster.catalogue || []).length + " models on your key · suggested " + (roster.text || "—") + " (text) / " + (roster.live || "—") + " (live)")
+      : (roster.reason || "Add GEMINI_API_KEY to .env to load your real model roster.")));
+    const ab = el("button", "btn primary", "Auto-pick models from my key");
+    ab.disabled = !roster.available;
+    ab.onclick = async () => {
+      ab.disabled = true; ab.textContent = "Reading the roster…";
+      try {
+        const r = await api("/api/models/autofix", { method: "POST" });
+        toast(r.ok ? ("Models set: " + (r.text_model || "—") + " (text) · " + (r.live_model || "—") + " (live)") : (r.error || "Auto-pick failed."), r.ok ? "ok" : "err", 8000);
+        await loadSettings(); loadPrompt();
+      } catch (e) { toast(e.message, "err"); ab.disabled = false; ab.textContent = "Auto-pick models from my key"; }
+    };
+    af.appendChild(ab); G.appendChild(af);
+  } catch (e) { toast(e.message, "err"); }
+}
+async function saveSettings() {
+  const data = {};
+  $$("#setGrid [data-k]").forEach(i => data[i.dataset.k] = i.value);
+  try {
+    await api("/api/settings", { method: "PATCH", body: JSON.stringify(data) });
+    if (data.voice_name) $("#voiceSel").value = data.voice_name;
+    toast("Settings saved — they're rows, not code.", "ok");
+    loadPrompt();
+  } catch (e) { toast(e.message, "err"); }
+}
+async function loadSessions() {
+  try {
+    const d = await api("/api/sessions");
+    const L = $("#sessList"); L.innerHTML = "";
+    if (!d.sessions.length) L.appendChild(el("div", "empty", "No sessions yet."));
+    d.sessions.slice(0, 12).forEach(s => {
+      const r = el("div", "sessrow");
+      r.appendChild(el("span", null, s.session_key));
+      r.appendChild(el("span", null, s.turns));
+      r.appendChild(el("span", null, fmtSecs(s.live_seconds)));
+      const g = el("span", "hx", s.goaway_count); r.appendChild(g);
+      const c = el("span", "hx", (s.close_reason || "open").slice(0, 10)); r.appendChild(c);
+      r.onclick = async () => {
+        try {
+          const td = await api("/api/sessions/" + s.id + "/turns");
+          const body = el("div");
+          if (!td.turns.length) body.appendChild(el("div", "empty", "No turns recorded."));
+          td.turns.forEach(t => {
+            const c = el("div", "tcard " + (t.role === "user" ? "user" : t.role === "jarvis" ? "jarvis" : "tool"));
+            c.style.maxWidth = "100%"; c.style.marginBottom = "8px";
+            c.appendChild(el("span", "who", t.role + (t.interrupted ? " · interrupted" : "")));
+            c.appendChild(el("span", null, t.content));
+            body.appendChild(c);
+          });
+          openModal("Session " + s.session_key, body, [{ label: "Close", cls: "btn", fn: closeModal }]);
+        } catch (e) { toast(e.message, "err"); }
+      };
+      L.appendChild(r);
+    });
+  } catch (e) {}
+}
+async function loadPrompt() {
+  try {
+    const d = await api("/api/prompt");
+    $("#wpTokens").textContent = d.est_tokens; $("#wpBudget").textContent = d.budget;
+    $("#wpFill").style.width = Math.min(100, d.est_tokens / d.budget * 100) + "%";
+    const C = $("#wpSections"); C.innerHTML = "";
+    d.sections.forEach(s => {
+      const ch = el("span", "chip " + (s.included ? "secured" : "unreachable"), s.name + " · " + s.tokens + "t");
+      ch.title = s.included ? "included" : "omitted (budget)";
+      C.appendChild(ch);
+    });
+    $("#wpText").textContent = d.text;
+  } catch (e) { $("#wpText").textContent = "Could not load: " + e.message; }
+}
+async function runProbe() {
+  const btn = $("#probeBtn"); btn.disabled = true; btn.textContent = "Probing…";
+  const O = $("#probeOut"); O.innerHTML = ""; O.appendChild(el("div", "empty", "Asking Gemini and the database…"));
+  try {
+    const d = await api("/api/probe", { method: "POST" });
+    O.innerHTML = "";
+    O.appendChild(el("div", "lbl", "mode: " + d.mode));
+    d.checks.forEach(c => {
+      const r = el("div", "check");
+      r.appendChild(el("span", "ic " + (c.ok ? "ok" : "bad"), c.ok ? "✓" : "✗"));
+      const mid = el("div"); mid.appendChild(el("div", null, c.name)); if (c.detail) mid.appendChild(el("div", "cd", c.detail));
+      r.appendChild(mid); O.appendChild(r);
+    });
+    toast(d.checks.every(c => c.ok) ? "All checks green." : "Probe finished — see the red items.", d.checks.every(c => c.ok) ? "ok" : "warn");
+  } catch (e) { O.innerHTML = ""; O.appendChild(el("div", "empty", e.message)); }
+  btn.disabled = false; btn.textContent = "Run probe";
+}
+async function loadBackups() {
+  try {
+    const d = await api("/api/backups");
+    const L = $("#backupList"); L.innerHTML = "";
+    if (!d.backups.length) L.appendChild(el("div", "empty", "No snapshots yet."));
+    d.backups.slice(0, 6).forEach(b => {
+      const r = el("div", "check");
+      const a = el("a", null, b.name); a.href = "/api/backup/download?name=" + encodeURIComponent(b.name) + (S.token ? "&token=" + encodeURIComponent(S.token) : "");
+      a.style.cssText = "color:var(--cyan);font-family:var(--mono);font-size:11px;text-decoration:none";
+      r.appendChild(a); r.appendChild(el("span", "cd", (b.bytes / 1024).toFixed(0) + " KB"));
+      L.appendChild(r);
+    });
+  } catch (e) {}
+}
+/* ================= modal ================= */
+function openModal(title, bodyNode, actions, textNode, extraBtn) {
+  $("#modalTitle").textContent = title;
+  const B = $("#modalBody"); B.innerHTML = "";
+  if (textNode) B.appendChild(textNode);
+  if (bodyNode) B.appendChild(bodyNode);
+  const R = $("#modalRow"); R.innerHTML = "";
+  if (extraBtn) R.appendChild(extraBtn);
+  (actions || []).forEach(a => { const b = el("button", a.cls || "btn", a.label); b.onclick = a.fn; R.appendChild(b); });
+  $("#modal").classList.add("show"); $("#scrim").classList.add("show");
+}
+function closeModal() { $("#modal").classList.remove("show"); if (!$("#drawer").classList.contains("show")) $("#scrim").classList.remove("show"); }
+/* ================= misc renders ================= */
+function renderMode() {
+  const b = $("#modeBadge");
+  b.textContent = S.mode === "real" ? "LIVE · Gemini" : "rehearsal";
+  b.className = "badge " + (S.mode === "real" ? "real" : "rehearsal");
+  b.title = S.mode === "real" ? "Connected to Gemini Live with your key" : "No API key — local understudy, real tools. Add GEMINI_API_KEY to .env.";
+  $("#tgBrowserVoice").style.display = S.mode === "rehearsal" ? "" : "none";
+}
+function renderMachine() {
+  const M = $("#machine"); M.innerHTML = "";
+  STATES.forEach((st, i) => {
+    if (i) M.appendChild(el("span", "arr", "→"));
+    const n = el("span", "st", st); n.dataset.st = st; M.appendChild(n);
+  });
+}
+function tickClock() {
+  try {
+    $("#clock").textContent = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Karachi", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }).format(new Date()) + " PKT";
+  } catch (e) { $("#clock").textContent = new Date().toLocaleTimeString(); }
+}
+/* ================= wiring ================= */
+function wire() {
+  $("#muteBtn").onclick = () => setMuted(!S.muted);
+  const ptt = $("#ptt");
+  ptt.addEventListener("pointerdown", (e) => { e.preventDefault(); pttDown(); });
+  ["pointerup", "pointerleave", "pointercancel"].forEach(ev => ptt.addEventListener(ev, pttUp));
+  $("#sendBtn").onclick = () => sendText($("#textInput").value);
+  $("#textInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendText($("#textInput").value); });
+  $("#jumpBtn").onclick = () => { TR().scrollTop = TR().scrollHeight; $("#jumpBtn").style.display = "none"; };
+  TR().addEventListener("scroll", () => { if (nearBottom()) $("#jumpBtn").style.display = "none"; });
+  $("#interruptBtn").onclick = () => { wsSend({ type: "interrupt" }); AudioEngine.flush(); if (window.speechSynthesis) speechSynthesis.cancel(); TtsQueue.stop(); };
+  $("#reconnectBtn").onclick = () => { S.ending = true; if (S.ws) { try { S.ws.close(); } catch (e) {} } S.reconnectTries = 0; setTimeout(connectWS, 250); toast("Reconnecting…", "info", 2000); };
+  $("#endBtn").onclick = () => { S.ending = true; wsSend({ type: "end" }); AudioEngine.flush(); if (window.speechSynthesis) speechSynthesis.cancel(); setTimeout(() => { if (S.ws) try { S.ws.close(); } catch (e) {} }, 400); toast("Session ended. The ledger is committed.", "info"); loadSessions(); };
+  $("#livePowerBtn").onclick = () => {
+    if (S.wsState === "LIVE" || S.wsState === "CONNECTING" || S.wsState === "RESUMING") { $("#endBtn").click(); }
+    else { $("#reconnectBtn").click(); }
+  };
+  $("#micMuteBtn").onclick = () => {
+    S.micMuted = !S.micMuted;
+    const b = $("#micMuteBtn");
+    if (S.micMuted) {
+      pttUp();
+      if (Mic.stream) Mic.stream.getAudioTracks().forEach(t => t.enabled = false);
+      b.textContent = "🔇 Mic Muted"; b.classList.add("danger");
+      $("#micHint").textContent = "mic muted · typed text always works";
+    } else {
+      if (Mic.stream) Mic.stream.getAudioTracks().forEach(t => t.enabled = true);
+      b.textContent = "🎙 Mic Live"; b.classList.remove("danger");
+      $("#micHint").textContent = "hold or tap mic to speak · or type below";
+    }
+  };
+  $("#localVoiceSel").onchange = () => {
+    S.localVoice = $("#localVoiceSel").value;
+    localStorage.setItem("jarvis_local_voice", S.localVoice);
+    TtsQueue.stop();
+    TtsQueue.enqueue("Voice calibrated, sir.");
+  };
+  const tg = (id, key, after) => { const n = $(id); n.onclick = () => { S[key] = !S[key]; n.classList.toggle("on", S[key]); if (after) after(); }; };
+  tg("#tgHands", "handsFree", async () => {
+    if (S.handsFree) { const ok = await Mic.start(); if (ok) { Mic.sending = true; toast("Hands-free: mic stays open while LIVE.", "info"); } else { S.handsFree = false; $("#tgHands").classList.remove("on"); } }
+    else { Mic.sending = false; }
+  });
+  tg("#tgRecord", "offRecord", () => toast(S.offRecord ? "Off-record: typed turns will not be stored." : "Recording resumed.", "info"));
+  tg("#tgBrowserVoice", "browserVoice", () => { localStorage.setItem("jarvis_bvoice", S.browserVoice ? "1" : "0"); if (!S.browserVoice && window.speechSynthesis) speechSynthesis.cancel(); });
+  $("#voiceSel").onchange = async () => {
+    try { await api("/api/settings", { method: "PATCH", body: JSON.stringify({ voice_name: $("#voiceSel").value }) }); toast("Voice set to " + $("#voiceSel").value + " — reconnecting…", "ok"); $("#reconnectBtn").click(); }
+    catch (e) { toast(e.message, "err"); }
+  };
+  // grades
+  $("#fwBtn").onclick = async () => {
+    const O = $("#fwOut"); O.innerHTML = ""; O.appendChild(el("div", "empty", "Computing…"));
+    try {
+      const r = await api("/api/tools/run", { method: "POST", body: JSON.stringify({ name: "required_on_final", args: { course_code: $("#fwCourse").value, target_letter: $("#fwLetter").value } }) });
+      O.innerHTML = "";
+      const data = r.data || r;
+      if (data.ok && data.tiers) data.tiers.forEach(t => O.appendChild(el("div", "verdict " + t.verdict, t.say)));
+      else O.appendChild(el("div", "verdict", data.say || JSON.stringify(r)));
+    } catch (e) { O.innerHTML = ""; O.appendChild(el("div", "empty", e.message)); }
+  };
+  // tasks
+  let qT; $("#taskQ").addEventListener("input", () => { clearTimeout(qT); qT = setTimeout(() => { S.filters.q = $("#taskQ").value; loadTasks(); }, 250); });
+  $("#taskCourse").onchange = () => { S.filters.course = $("#taskCourse").value; loadTasks(); };
+  $("#taskSort").onchange = () => { S.filters.sort = $("#taskSort").value; loadTasks(); };
+  $$("#statusChips .fchip").forEach(c => c.onclick = () => { $$("#statusChips .fchip").forEach(x => x.classList.remove("on")); c.classList.add("on"); S.filters.status = c.dataset.st; loadTasks(); });
+  $("#newTaskBtn").onclick = () => openTaskDrawer(null);
+  $("#bulkDone").onclick = async () => { try { await api("/api/tasks/bulk", { method: "POST", body: JSON.stringify({ ids: [...S.sel], action: "complete" }) }); S.sel.clear(); renderBulk(); toast("Batch completed.", "ok"); loadTasks(); refreshDash(); } catch (e) { toast(e.message, "err"); } };
+  $("#bulkCancel").onclick = async () => { try { await api("/api/tasks/bulk", { method: "POST", body: JSON.stringify({ ids: [...S.sel], action: "cancel" }) }); S.sel.clear(); renderBulk(); toast("Batch cancelled.", "warn"); loadTasks(); } catch (e) { toast(e.message, "err"); } };
+  $("#bulkClear").onclick = () => { S.sel.clear(); renderBulk(); renderTasks(); };
+  $("#drawerSave").onclick = saveDrawer;
+  $("#drawerClose").onclick = closeDrawer;
+  $("#scrim").onclick = () => { closeModal(); closeDrawer(); };
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeModal(); closeDrawer(); } });
+  $("#undoBtn").onclick = async () => { const t = S.undo; hideUndo(); if (!t) return;
+    try { await api("/api/undo/" + t, { method: "POST" }); toast("Undone. As if it never happened.", "ok"); loadTasks(); loadFacts(); refreshDash(); }
+    catch (e) { toast(e.message, "err"); } };
+  // memory
+  let fT; $("#factQ").addEventListener("input", () => { clearTimeout(fT); fT = setTimeout(() => { S.factQ = $("#factQ").value; loadFacts(); }, 250); });
+  $("#factDomain").onchange = () => { S.factDomain = $("#factDomain").value; loadFacts(); };
+  $("#nfBtn").onclick = async () => {
+    const key = $("#nfKey").value.trim(), value = $("#nfValue").value.trim();
+    if (!key || !value) { toast("A memory needs a key and a value.", "warn"); return; }
+    try { await api("/api/facts", { method: "POST", body: JSON.stringify({ domain: $("#nfDomain").value || "general", key, value, sensitivity: $("#nfSens").value, importance: parseInt($("#nfImp").value, 10) || 3 }) });
+      $("#nfKey").value = ""; $("#nfValue").value = ""; toast("Committed to memory.", "ok"); loadFacts(); }
+    catch (e) { toast(e.message, "err"); }
+  };
+  $("#ncBtn").onclick = async () => {
+    const p = $("#ncPromise").value.trim(); if (!p) { toast("A promise needs words.", "warn"); return; }
+    try { await api("/api/commitments", { method: "POST", body: JSON.stringify({ promise: p, due_hint: $("#ncDue").value }) }); $("#ncPromise").value = ""; $("#ncDue").value = ""; toast("Promise logged. Jarvis will hold you to it — gently.", "ok"); loadCommits(); }
+    catch (e) { toast(e.message, "err"); }
+  };
+  // tools
+  let tT; $("#toolQ").addEventListener("input", () => { clearTimeout(tT); tT = setTimeout(() => { S.toolQ = $("#toolQ").value; renderTools(); }, 200); });
+  $$("#riskChips .fchip").forEach(c => c.onclick = () => { $$("#riskChips .fchip").forEach(x => x.classList.remove("on")); c.classList.add("on"); S.toolRisk = c.dataset.risk; renderTools(); });
+  // system
+  $("#probeBtn").onclick = runProbe;
+  $("#setSave").onclick = saveSettings;
+  $("#wpRefresh").onclick = loadPrompt;
+  $("#wpCopy").onclick = async () => { try { await navigator.clipboard.writeText($("#wpText").textContent); toast("Wake briefing copied.", "ok"); } catch (e) { toast("Copy unavailable here.", "warn"); } };
+  $("#backupBtn").onclick = async () => { try { const r = await api("/api/backup", { method: "POST" }); toast("Snapshot taken: " + r.file, "ok"); loadBackups(); } catch (e) { toast(e.message, "err"); } };
+  $("#lockBtn").onclick = () => { const v = $("#lockToken").value.trim(); if (!v) return; S.token = v; localStorage.setItem("jarvis_token", v); location.reload(); };
+  $("#lockToken").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#lockBtn").click(); });
+  // nav active state + reveals
+  const secs = $$("main section");
+  const io = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { $$("#nav a").forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + e.target.id)); } }), { rootMargin: "-40% 0px -55% 0px" });
+  secs.forEach(s => io.observe(s));
+  const ro = new IntersectionObserver((es) => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add("in"); ro.unobserve(e.target); } }), { threshold: 0.08 });
+  $$(".reveal").forEach(n => ro.observe(n));
+}
+/* ================= boot ================= */
+async function init() {
+  renderMachine(); setWsState("IDLE"); tickClock(); setInterval(tickClock, 1000);
+  setMuted(S.muted);
+  $("#tgBrowserVoice").classList.toggle("on", S.browserVoice);
+  wire(); Orb.init();
+  let boot;
+  try { boot = await api("/api/bootstrap"); } catch (e) { toast("Cannot reach the server: " + e.message, "err"); return; }
+  S.authRequired = boot.authRequired; S.mode = boot.mode; renderMode();
+  if (boot.authRequired && !S.token) { showLock(); return; }
+  if (!boot.setupComplete) { location.href = "/"; return; }
+  try {
+    const [dash, tools] = await Promise.all([api("/api/dashboard"), api("/api/tools").catch(() => null)]);
+    S.dash = dash;
+    renderGrades(); renderTodayExtras();
+    const tc = $("#taskCourse");
+    (Array.isArray(dash.grades) ? dash.grades : []).forEach(g => tc.appendChild(el("option", null, g.code)).value = g.code);
+    if (tools) { S.specs = tools.tools; $("#toolCoverage").textContent = tools.coverage.specs + " specs · " + tools.coverage.declared_to_gemini + " declared · " + (tools.coverage.missing_handlers || []).length + " missing"; renderTools(); }
+  } catch (e) { toast("Dashboard load failed: " + e.message, "err"); }
+  loadTasks(); loadFacts(); loadCommits(); loadSettings(); loadSessions(); loadPrompt(); loadBackups();
+  connectWS();
+}
+if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+</script>
+</body>
+</html>
