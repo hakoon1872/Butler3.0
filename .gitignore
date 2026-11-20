@@ -6,3 +6,6 @@ __pycache__/
 *.bak
 *.onnx
 *.bin
+
+*.db
+*.zip

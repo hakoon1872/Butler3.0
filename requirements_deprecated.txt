@@ -1,6 +1,0 @@
-# R9: pinned — the Live API surface is version-sensitive. Verified 16 Nov 2026.
-fastapi==0.163.1
-uvicorn[standard]==0.54.0
-google-genai==3.3.0
-python-dotenv==1.2.4
-websockets==17.4
