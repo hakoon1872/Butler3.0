@@ -70,7 +70,10 @@ def _authed(request: Request) -> bool:
 @app.middleware("http")
 async def auth_gate(request: Request, call_next):
     p = request.url.path
-    if p.startswith("/api/") and p not in ("/api/bootstrap", "/api/health") and not _authed(request):
+    # 20 Nov: first-run wizard sends no token (setup.html has no lock screen).
+    # Exempt /api/setup ONLY while setup is incomplete; once complete it is gated again.
+    first_run_setup = p == "/api/setup" and not is_setup_complete()
+    if p.startswith("/api/") and p not in ("/api/bootstrap", "/api/health") and not first_run_setup and not _authed(request):
         return JSONResponse({"error": "unauthorized", "hint": "Send X-Jarvis-Token header (see .env)."}, status_code=401)
     return await call_next(request)
 
@@ -89,9 +92,11 @@ async def health():
 # ---------------- pages ----------------
 @app.get("/")
 async def serve_root():
-    if not is_setup_complete():
-        return FileResponse(STATIC_DIR / "setup.html")
-    return FileResponse(STATIC_DIR / "hud.html")
+    # 20 Nov fix: '/' is dynamic (wizard vs HUD). Without Cache-Control, browsers
+    # heuristically cache it from Last-Modified, so the post-Initialize redirect
+    # replayed a stale wizard from cache. no-store forces a fresh decision every hit.
+    page = "hud.html" if is_setup_complete() else "setup.html"
+    return FileResponse(STATIC_DIR / page, headers={"Cache-Control": "no-store"})
 
 @app.get("/legacy")
 async def serve_legacy():

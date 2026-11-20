@@ -1,0 +1,404 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Butler // First Boot</title>
+<style>
+:root{--bg:#070b12;--panel:#0e1624;--panel2:#0a101d;--border:#1e2d4a;--cyan:#38bdf8;--emerald:#10b981;--text:#e2e8f0;--muted:#94a3b8;--rose:#f43f5e}
+*{box-sizing:border-box;font-family:'Inter',system-ui,sans-serif;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:16px}
+.wizard{background:var(--panel);border:1px solid var(--border);border-radius:16px;width:100%;max-width:920px;max-height:94vh;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,.6)}
+.wiz-head{padding:24px 28px 16px;border-bottom:1px solid var(--border)}
+.wiz-head h1{font-size:20px;color:var(--cyan);letter-spacing:.08em;margin-bottom:4px}
+.wiz-head p{font-size:13px;color:var(--muted)}
+.prog-wrap{margin-top:14px;display:flex;align-items:center;gap:12px}
+.prog-bar{flex:1;height:6px;background:var(--panel2);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;width:20%;background:linear-gradient(90deg,var(--cyan),var(--emerald));border-radius:99px;transition:width .35s ease}
+.step-lbl{font-size:11px;color:var(--muted);white-space:nowrap}
+.wiz-body{flex:1;overflow-y:auto;padding:24px 28px;min-height:0}
+.wiz-body::-webkit-scrollbar{width:7px}
+.wiz-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+.wiz-step{display:none}.wiz-step.active{display:block}
+.step-title{font-size:16px;font-weight:700;color:var(--cyan);margin-bottom:4px}
+.step-desc{font-size:12.5px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600}
+input,select,textarea{background:var(--panel2);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:9px 11px;font-size:13px;width:100%}
+input:focus,select:focus{outline:none;border-color:var(--cyan)}
+h3.sec{font-size:13px;color:var(--cyan);text-transform:uppercase;letter-spacing:.06em;margin:22px 0 10px;padding-bottom:7px;border-bottom:1px solid var(--border)}
+.card{background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px}
+.card-head{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:10px}
+.card-head>div{flex:1;min-width:110px}
+.card-head>div.narrow{flex:0 0 90px;min-width:90px}
+.card-head>div.btn-col{flex:0 0 auto;min-width:auto}
+.assess-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap}
+.assess-row>div{flex:1;min-width:80px}
+.assess-row>div.narrow{flex:0 0 70px;min-width:70px}
+.assess-row>div.btn-col{flex:0 0 auto;min-width:auto}
+.day-panel{border:1px solid var(--border);border-radius:10px;margin-bottom:10px;overflow:hidden}
+.day-header{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;cursor:pointer;background:var(--panel2);transition:background .15s}
+.day-header:hover{background:#111b2e}
+.day-header .dn{font-weight:700;font-size:13px}
+.day-header .dc{font-size:11px;color:var(--muted)}
+.day-header .chev{font-size:11px;color:var(--muted);transition:transform .2s}
+.day-header.open .chev{transform:rotate(180deg)}
+.day-body{display:none;padding:12px 16px;border-top:1px solid var(--border)}
+.day-body.open{display:block}
+.slot-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap}
+.slot-row>div{flex:1;min-width:75px}
+.slot-row>div.narrow{flex:0 0 80px;min-width:80px}
+.slot-row>div.btn-col{flex:0 0 auto;min-width:auto}
+.goal-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap}
+.goal-row>div{flex:1;min-width:100px}
+.goal-row>div.narrow{flex:0 0 100px;min-width:100px}
+.goal-row>div.btn-col{flex:0 0 auto;min-width:auto}
+.dom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:14px}
+.dom-item{display:flex;align-items:center;gap:10px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:border-color .15s}
+.dom-item:hover{border-color:var(--cyan)}
+.dom-item input{width:auto}
+.dom-item span{font-size:13px;font-weight:600}
+.dom-item .sub{font-size:11px;color:var(--muted);font-weight:400}
+.grade-row{display:flex;gap:8px;align-items:flex-end;margin-bottom:6px}
+.grade-row>div{flex:1}
+.grade-row>div.narrow{flex:0 0 90px}
+.grade-row>div.btn-col{flex:0 0 auto}
+.btn{padding:8px 16px;border-radius:7px;border:1px solid var(--cyan);background:transparent;color:var(--cyan);font-size:12px;font-weight:600;cursor:pointer;transition:.15s}
+.btn:hover{background:rgba(56,189,248,.12)}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-danger{border-color:var(--rose);color:var(--rose)}
+.btn-danger:hover{background:rgba(244,63,94,.12)}
+.btn-add{border-style:dashed;width:100%;margin-top:6px;padding:10px}
+.wiz-foot{display:flex;justify-content:space-between;padding:18px 28px;border-top:1px solid var(--border)}
+.btn-nav{padding:11px 28px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;transition:.2s;border:none}
+.btn-back{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.btn-back:hover{border-color:var(--muted);color:var(--text)}
+.btn-next{background:var(--cyan);color:var(--bg)}
+.btn-next:hover{background:#7dd3fc}
+.btn-init{background:var(--emerald);color:var(--bg)}
+.btn-init:hover{background:#34d399}
+</style>
+</head>
+<body>
+<datalist id="protocolList">
+<option value="problem_drilling"><option value="numerical_3step_audit"><option value="comparison_matrix">
+<option value="trigger_mindmap"><option value="spaced_flashcards"><option value="condensed_bullets">
+<option value="essay_templates"><option value="presentation_prep">
+</datalist>
+<div class="wizard">
+  <div class="wiz-head">
+    <h1>BUTLER // INITIALIZATION</h1>
+    <p>Let's build your brain. Tell me who you are, what you're managing, and how you want to be managed.</p>
+    <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill"></div></div><span class="step-lbl" id="stepLbl">Step 1 of 5</span></div>
+  </div>
+  <div class="wiz-body">
+
+    <div id="step-1" class="wiz-step active">
+      <div class="step-title">Who are you, and what do we manage?</div>
+      <div class="step-desc">Your core identity and the life domains the Butler will actively manage.</div>
+      <h3 class="sec">Core Identity</h3>
+      <div class="grid2">
+        <div class="field"><label>Full Name *</label><input id="name" placeholder="e.g. Haider"></div>
+        <div class="field"><label>Preferred Name</label><input id="preferred_name" placeholder="What I call you"></div>
+        <div class="field"><label>University</label><input id="university" placeholder="e.g. COMSATS Lahore"></div>
+        <div class="field"><label>Program / Degree</label><input id="program" placeholder="e.g. BBA Finance"></div>
+        <div class="field"><label>Semester / Year</label><input id="semester" placeholder="e.g. 6th Semester"></div>
+        <div class="field"><label>Timezone</label><input id="timezone" value="Asia/Karachi"></div>
+        <div class="field"><label>Current GPA</label><input id="current_gpa" type="number" step="0.01" min="0" max="4" placeholder="e.g. 3.42"></div>
+        <div class="field"><label>Target GPA</label><input id="target_gpa" type="number" step="0.01" min="0" max="4" value="3.9"></div>
+      </div>
+      <h3 class="sec">Life Domains</h3>
+      <div class="dom-grid">
+        <label class="dom-item"><input type="checkbox" class="domain-check" data-domain="Academics" checked><span>Academics<br><span class="sub">Core pack — courses, grades, study</span></span></label>
+        <label class="dom-item"><input type="checkbox" class="domain-check" data-domain="Fitness"><span>Fitness &amp; Health<br><span class="sub">Workouts, body metrics</span></span></label>
+        <label class="dom-item"><input type="checkbox" class="domain-check" data-domain="Projects"><span>Projects &amp; Work<br><span class="sub">Side projects, job tasks</span></span></label>
+        <label class="dom-item"><input type="checkbox" class="domain-check" data-domain="Finance"><span>Finance &amp; Money<br><span class="sub">Budget, expenses</span></span></label>
+        <label class="dom-item"><input type="checkbox" class="domain-check" data-domain="Journal"><span>Journal &amp; Reflection<br><span class="sub">Daily logs, insights</span></span></label>
+        <label class="dom-item"><input type="checkbox" class="domain-check" data-domain="Habits"><span>Personal Habits<br><span class="sub">Routines, self-care</span></span></label>
+      </div>
+    </div>
+
+    <div id="step-2" class="wiz-step">
+      <div class="step-title">Academic Arsenal</div>
+      <div class="step-desc">Add each course with its individual assessment components (Quiz 1, Quiz 2, Midterm, Final...). The Butler tracks every component independently and computes your grade margins and required-final marks.</div>
+      <div id="coursesContainer"></div>
+      <button class="btn btn-add" onclick="addCourse()">+ Add Course</button>
+      <h3 class="sec">Grading Scale (how % converts to letter grades at your uni)</h3>
+      <div id="gradesContainer"></div>
+      <button class="btn btn-add" onclick="addGradeRow()">+ Add Grade Tier</button>
+    </div>
+
+    <div id="step-3" class="wiz-step">
+      <div class="step-title">Weekly Rhythm</div>
+      <div class="step-desc">Map your week. Open each day and add time blocks. The Butler schedules tasks into these and respects your guardrails.</div>
+      <div id="daysContainer"></div>
+      <h3 class="sec">Daily Routine Anchors</h3>
+      <div class="grid3">
+        <div class="field"><label>Wake Time</label><input id="wake_time" type="time" value="07:00"></div>
+        <div class="field"><label>Sleep Time</label><input id="sleep_time" type="time" value="23:30"></div>
+        <div class="field"><label>Breakfast</label><input id="breakfast_time" type="time" value="08:00"></div>
+        <div class="field"><label>Lunch</label><input id="lunch_time" type="time" value="13:30"></div>
+        <div class="field"><label>Dinner</label><input id="dinner_time" type="time" value="20:00"></div>
+      </div>
+    </div>
+
+    <div id="step-4" class="wiz-step">
+      <div class="step-title">North Star &amp; Life Context</div>
+      <div class="step-desc">Your goals, active projects, and key people.</div>
+      <h3 class="sec">Goals</h3>
+      <div id="goalsContainer"></div>
+      <button class="btn btn-add" onclick="addGoal()">+ Add Goal</button>
+      <h3 class="sec">Active Projects</h3>
+      <div id="projectsContainer"></div>
+      <button class="btn btn-add" onclick="addProject()">+ Add Project</button>
+      <h3 class="sec">Key People</h3>
+      <div id="peopleContainer"></div>
+      <button class="btn btn-add" onclick="addPerson()">+ Add Person</button>
+    </div>
+
+    <div id="step-5" class="wiz-step">
+      <div class="step-title">The Brain's Settings</div>
+      <div class="step-desc">Personality, accountability, and boundaries. These shape how the Butler talks and nudges.</div>
+      <h3 class="sec">Butler Personality</h3>
+      <div class="grid3">
+        <div class="field"><label>Butler Name</label><input id="butler_name" value="Butler"></div>
+        <div class="field"><label>Voice</label><select id="voice"><option value="Fenrir">Fenrir (Crisp)</option><option value="Puck">Puck (Energetic)</option><option value="Charon">Charon (Deep)</option><option value="Aoede">Aoede (Clear)</option></select></div>
+        <div class="field"><label>Personality</label><select id="personality"><option value="Formal Butler">Formal Butler</option><option value="Casual Friend">Casual Friend</option><option value="Dry Wit">Dry Wit</option><option value="Straight-laced">Straight-laced</option></select></div>
+      </div>
+      <h3 class="sec">Accountability &amp; Boundaries</h3>
+      <div class="grid3">
+        <div class="field"><label>Academics Intensity</label>
+          <select id="acct_academics"><option value="L1">L1 — Gentle Nudge (mildest)</option><option value="L2" selected>L2 — Firm &amp; Structured</option><option value="L3">L3 — Renegotiate Plan</option><option value="L4">L4 — Log &amp; Review (strictest)</option></select>
+        </div>
+        <div class="field"><label>Other Domains Intensity</label>
+          <select id="acct_other"><option value="L1" selected>L1 — Gentle Nudge (mildest)</option><option value="L2">L2 — Firm &amp; Structured</option><option value="L3">L3 — Renegotiate Plan</option><option value="L4">L4 — Log &amp; Review (strictest)</option></select>
+        </div>
+        <div class="field"><label>Quiet Hours Start</label><input id="quiet_start" type="time" value="23:00"></div>
+        <div class="field"><label>Quiet Hours End</label><input id="quiet_end" type="time" value="07:00"></div>
+        <div class="field"><label>Nag Budget (max nudges/day)</label><input id="nag_budget" type="number" min="0" max="20" value="5"></div>
+        <div class="field"><label>Rollover Cap (min/day)</label><input id="rollover_cap" type="number" min="0" max="180" value="45"></div>
+      </div>
+      <h3 class="sec">Academic Calendar &amp; Privacy</h3>
+      <div class="grid3">
+        <div class="field"><label>Finals Start Date</label><input id="finals_date" type="date"></div>
+        <div class="field"><label>Wake Word Preference</label><select id="wake_word"><option value="Push-to-Talk" selected>Push-to-Talk</option><option value="Wake Word">Wake Word (future)</option><option value="Notification">Notification Action</option></select></div>
+        <div class="field"><label>Privacy Default</label><select id="privacy"><option value="always_store">Always Store</option><option value="ask_sensitive" selected>Ask Before Sensitive</option><option value="never_sensitive">Never Store Sensitive</option></select></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="wiz-foot">
+    <button class="btn-nav btn-back" id="btnBack" onclick="prevStep()" style="visibility:hidden">← Back</button>
+    <button class="btn-nav btn-next" id="btnNext" onclick="nextStep()">Next →</button>
+  </div>
+</div>
+
+<script>
+const DAYS=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const SLOT_TYPES=['Lecture','Lab','Tutorial','Deep Work','Light Review','Recovery & Rest','Commute','Meal','Sleep','Workout','Personal','Other'];
+const ASSESS_TYPES=['Quiz','Assignment','Midterm','Final','Presentation','Project','Other'];
+const DEFAULT_GRADES=[[85,'A',4.0],[80,'A-',3.66],[75,'B+',3.33],[71,'B',3.0],[68,'B-',2.66],[64,'C+',2.33],[61,'C',2.0],[58,'C-',1.66],[54,'D+',1.33],[50,'D',1.0]];
+let currentStep=1;const TOTAL=5;
+
+function val(id){const el=document.getElementById(id);return el?el.value.trim():''}
+function opts(arr){return arr.map(o=>`<option value="${o}">${o}</option>`).join('')}
+function showStep(n){
+  document.querySelectorAll('.wiz-step').forEach(s=>s.classList.remove('active'));
+  document.getElementById('step-'+n).classList.add('active');
+  document.getElementById('progFill').style.width=(n/TOTAL*100)+'%';
+  document.getElementById('stepLbl').textContent='Step '+n+' of '+TOTAL;
+  document.getElementById('btnBack').style.visibility=n===1?'hidden':'visible';
+  const nb=document.getElementById('btnNext');
+  if(n===TOTAL){nb.textContent='Initialize Butler 🎩';nb.classList.add('btn-init')}
+  else{nb.textContent='Next →';nb.classList.remove('btn-init')}
+  document.querySelector('.wiz-body').scrollTop=0;
+}
+function nextStep(){
+  if(currentStep===1&&!val('name')){alert('Please enter your name — I need to know who I serve!');return}
+  if(currentStep<TOTAL){currentStep++;showStep(currentStep)}else{submitSetup()}
+}
+function prevStep(){if(currentStep>1){currentStep--;showStep(currentStep)}}
+
+function addCourse(){
+  const c=document.createElement('div');c.className='card course-card';
+  c.innerHTML=`
+  <div class="card-head">
+    <div class="narrow field"><label>Code *</label><input class="c-code" placeholder="AMA"></div>
+    <div class="field"><label>Course Name</label><input class="c-name" placeholder="Adv. Management Accounting"></div>
+    <div class="field"><label>Instructor</label><input class="c-instructor" placeholder="e.g. Imran ur Rehman"></div>
+    <div class="narrow field"><label>Credits</label><input class="c-credits" type="number" value="3" min="0" max="6"></div>
+    <div class="btn-col"><button class="btn btn-danger btn-sm" onclick="this.closest('.course-card').remove()">✕</button></div>
+  </div>
+  <div class="card-head">
+    <div class="field"><label>Nature</label><select class="c-nature"><option>Quantitative</option><option>Qualitative</option><option selected>Mixed</option><option>Hybrid</option></select></div>
+    <div class="field"><label>Priority Tier</label><select class="c-priority"><option value="1">1 — Critical</option><option value="2" selected>2 — Important</option><option value="3">3 — Maintenance</option></select></div>
+    <div class="narrow field"><label>Time Share %</label><input class="c-share" type="number" value="10" min="0" max="100"></div>
+    <div class="narrow field"><label>Difficulty 1-5</label><input class="c-difficulty" type="number" value="3" min="1" max="5"></div>
+  </div>
+  <div class="card-head">
+    <div class="field"><label>Study Protocol (pick or type your own)</label><input class="c-protocol" list="protocolList" placeholder="e.g. problem_drilling, or your own method"></div>
+    <div class="field"><label>Risk Flags / Instructor Quirks</label><input class="c-risk" placeholder="e.g. hostile_qa, strict_anti_ai"></div>
+  </div>
+  <div class="field" style="margin-bottom:8px"><label>Assessment Components</label></div>
+  <div class="assess-list"></div>
+  <button class="btn btn-sm" onclick="addAssess(this.closest('.course-card'))">+ Add Assessment</button>`;
+  document.getElementById('coursesContainer').appendChild(c);
+  addAssess(c);
+}
+function addAssess(card){
+  const r=document.createElement('div');r.className='assess-row';
+  r.innerHTML=`
+  <div class="narrow field"><label>Label</label><input class="a-label" placeholder="Quiz 1"></div>
+  <div class="field"><label>Type</label><select class="a-type">${opts(ASSESS_TYPES)}</select></div>
+  <div class="narrow field"><label>Max Marks</label><input class="a-max" type="number" value="100" min="0"></div>
+  <div class="narrow field"><label>Obtained</label><input class="a-obtained" type="number" value="0" min="0"></div>
+  <div class="narrow field"><label>Expected</label><input class="a-expected" type="number" value="0" min="0"></div>
+  <div class="narrow field"><label>Status</label><select class="a-status"><option>Upcoming</option><option>In Progress</option><option>Completed</option></select></div>
+  <div class="btn-col"><button class="btn btn-danger btn-sm" onclick="this.closest('.assess-row').remove()">✕</button></div>`;
+  card.querySelector('.assess-list').appendChild(r);
+}
+function initDays(){
+  const c=document.getElementById('daysContainer');
+  DAYS.forEach(d=>{
+    const p=document.createElement('div');p.className='day-panel';p.dataset.day=d;
+    p.innerHTML=`<div class="day-header" onclick="toggleDay(this)"><span class="dn">${d}</span><span class="dc">0 slots</span><span class="chev">▼</span></div>
+    <div class="day-body"><div class="slots-container"></div><button class="btn btn-sm" onclick="addSlot('${d}')">+ Add Slot</button></div>`;
+    c.appendChild(p);
+  });
+}
+function toggleDay(hdr){hdr.classList.toggle('open');hdr.nextElementSibling.classList.toggle('open')}
+function addSlot(day){
+  const panel=document.querySelector(`.day-panel[data-day="${day}"]`);
+  const r=document.createElement('div');r.className='slot-row';
+  r.innerHTML=`
+  <div class="narrow field"><label>Start</label><input class="s-start" type="time" value="09:00"></div>
+  <div class="narrow field"><label>End</label><input class="s-end" type="time" value="10:00"></div>
+  <div class="field"><label>Type</label><select class="s-type">${opts(SLOT_TYPES)}</select></div>
+  <div class="field"><label>Location</label><input class="s-location" placeholder="Home / Uni Library"></div>
+  <div class="field"><label>Course Focus</label><input class="s-focus" placeholder="Optional"></div>
+  <div class="field"><label>Guardrail</label><input class="s-guardrail" placeholder="e.g. no heavy study here"></div>
+  <div class="btn-col"><button class="btn btn-danger btn-sm" onclick="this.closest('.slot-row').remove();updateSlotCount('${day}')">✕</button></div>`;
+  panel.querySelector('.slots-container').appendChild(r);
+  updateSlotCount(day);
+}
+function updateSlotCount(day){
+  const panel=document.querySelector(`.day-panel[data-day="${day}"]`);
+  const n=panel.querySelectorAll('.slot-row').length;
+  panel.querySelector('.dc').textContent=n+' slot'+(n!==1?'s':'');
+}
+function addGoal(){
+  const g=document.createElement('div');g.className='card goal-card';
+  g.innerHTML=`
+  <div class="goal-row">
+    <div class="narrow field"><label>Domain</label><select class="go-domain"><option>Academics</option><option>Fitness</option><option>Projects</option><option>Finance</option><option>Journal</option><option>Habits</option><option>General</option></select></div>
+    <div class="field"><label>Title *</label><input class="go-title" placeholder="e.g. Maintain 3.9 GPA"></div>
+    <div class="narrow field"><label>Priority</label><select class="go-priority"><option>High</option><option selected>Medium</option><option>Low</option></select></div>
+    <div class="btn-col"><button class="btn btn-danger btn-sm" onclick="this.closest('.goal-card').remove()">✕</button></div>
+  </div>
+  <div class="goal-row">
+    <div class="field"><label>Why it matters</label><input class="go-why" placeholder="One line"></div>
+    <div class="field"><label>Success Metric</label><input class="go-metric" placeholder="How you'll know you hit it"></div>
+    <div class="narrow field"><label>Deadline</label><input class="go-deadline" type="date"></div>
+  </div>`;
+  document.getElementById('goalsContainer').appendChild(g);
+}
+function addProject(){
+  const p=document.createElement('div');p.className='card project-card';
+  p.innerHTML=`<div class="goal-row">
+    <div class="field"><label>Project Name *</label><input class="p-name"></div>
+    <div class="field"><label>Description</label><input class="p-desc"></div>
+    <div class="narrow field"><label>Deadline</label><input class="p-deadline" type="date"></div>
+    <div class="btn-col"><button class="btn btn-danger btn-sm" onclick="this.closest('.project-card').remove()">✕</button></div>
+  </div>`;
+  document.getElementById('projectsContainer').appendChild(p);
+}
+function addPerson(){
+  const p=document.createElement('div');p.className='card person-card';
+  p.innerHTML=`<div class="goal-row">
+    <div class="field"><label>Name *</label><input class="pe-name"></div>
+    <div class="field"><label>Relation</label><input class="pe-relation" placeholder="e.g. RTT Instructor"></div>
+    <div class="field"><label>Notes</label><input class="pe-notes"></div>
+    <div class="btn-col"><button class="btn btn-danger btn-sm" onclick="this.closest('.person-card').remove()">✕</button></div>
+  </div>`;
+  document.getElementById('peopleContainer').appendChild(p);
+}
+function initGrades(){DEFAULT_GRADES.forEach(g=>addGradeRow(g[0],g[1],g[2]))}
+function addGradeRow(th,lt,pt){
+  const r=document.createElement('div');r.className='grade-row';
+  r.innerHTML=`
+  <div class="narrow field"><label>Threshold %</label><input class="g-threshold" type="number" value="${th??''}" min="0" max="100"></div>
+  <div class="narrow field"><label>Letter</label><input class="g-letter" value="${lt??''}"></div>
+  <div class="narrow field"><label>Grade Points</label><input class="g-points" type="number" step="0.01" value="${pt??''}" min="0" max="4"></div>
+  <div class="btn-col"><button class="btn btn-danger btn-sm" onclick="this.closest('.grade-row').remove()">✕</button></div>`;
+  document.getElementById('gradesContainer').appendChild(r);
+}
+function buildPayload(){
+  const payload={
+    profile:{name:val('name'),preferred_name:val('preferred_name'),university:val('university'),program:val('program'),semester:val('semester'),timezone:val('timezone')||'Asia/Karachi',current_gpa:parseFloat(val('current_gpa'))||null,target_gpa:parseFloat(val('target_gpa'))||4.0},
+    domains:[],courses:[],grading_scale:[],time_blocks:[],routine_anchors:[],goals:[],projects:[],people:[],
+    settings:{butler_name:val('butler_name')||'Butler',voice_name:val('voice'),personality:val('personality'),
+      accountability_academics:val('acct_academics'),accountability_other:val('acct_other'),
+      quiet_start:val('quiet_start'),quiet_end:val('quiet_end'),nag_budget:val('nag_budget'),
+      rollover_cap:val('rollover_cap'),finals_start_date:val('finals_date'),wake_word_pref:val('wake_word'),
+      privacy:val('privacy'),setup_complete:'true'}
+  };
+  document.querySelectorAll('.domain-check').forEach(cb=>payload.domains.push({name:cb.dataset.domain,enabled:cb.checked}));
+  document.querySelectorAll('.course-card').forEach(card=>{
+    const assessments=[];
+    card.querySelectorAll('.assess-row').forEach(r=>{
+      assessments.push({label:r.querySelector('.a-label').value.trim(),type:r.querySelector('.a-type').value,
+        max:parseFloat(r.querySelector('.a-max').value)||0,obtained:parseFloat(r.querySelector('.a-obtained').value)||0,
+        expected:parseFloat(r.querySelector('.a-expected').value)||0,status:r.querySelector('.a-status').value});
+    });
+    payload.courses.push({code:card.querySelector('.c-code').value.trim(),name:card.querySelector('.c-name').value.trim(),
+      instructor:card.querySelector('.c-instructor').value.trim(),credits:parseInt(card.querySelector('.c-credits').value)||3,
+      nature:card.querySelector('.c-nature').value,priority:parseInt(card.querySelector('.c-priority').value)||2,
+      time_share:parseFloat(card.querySelector('.c-share').value)||10,difficulty:parseInt(card.querySelector('.c-difficulty').value)||3,
+      protocol:card.querySelector('.c-protocol').value.trim(),risk_flags:card.querySelector('.c-risk').value.trim(),
+      assessments:assessments});
+  });
+  document.querySelectorAll('.grade-row').forEach(r=>{
+    payload.grading_scale.push({threshold:parseFloat(r.querySelector('.g-threshold').value)||0,letter:r.querySelector('.g-letter').value.trim(),points:parseFloat(r.querySelector('.g-points').value)||0});
+  });
+  document.querySelectorAll('.day-panel').forEach(panel=>{
+    const day=panel.dataset.day;
+    panel.querySelectorAll('.slot-row').forEach(s=>{
+      payload.time_blocks.push({day:day,start:s.querySelector('.s-start').value,end:s.querySelector('.s-end').value,
+        type:s.querySelector('.s-type').value,location:s.querySelector('.s-location').value.trim(),
+        focus:s.querySelector('.s-focus').value.trim(),guardrail:s.querySelector('.s-guardrail').value.trim()});
+    });
+  });
+  payload.routine_anchors=[{type:'wake',time:val('wake_time')},{type:'sleep',time:val('sleep_time')},
+    {type:'breakfast',time:val('breakfast_time')},{type:'lunch',time:val('lunch_time')},{type:'dinner',time:val('dinner_time')}];
+  document.querySelectorAll('.goal-card').forEach(g=>{
+    payload.goals.push({domain:g.querySelector('.go-domain').value,title:g.querySelector('.go-title').value.trim(),
+      why:g.querySelector('.go-why').value.trim(),metric:g.querySelector('.go-metric').value.trim(),
+      deadline:g.querySelector('.go-deadline').value,priority:g.querySelector('.go-priority').value});
+  });
+  document.querySelectorAll('.project-card').forEach(p=>{
+    payload.projects.push({name:p.querySelector('.p-name').value.trim(),desc:p.querySelector('.p-desc').value.trim(),deadline:p.querySelector('.p-deadline').value});
+  });
+  document.querySelectorAll('.person-card').forEach(p=>{
+    payload.people.push({name:p.querySelector('.pe-name').value.trim(),relation:p.querySelector('.pe-relation').value.trim(),notes:p.querySelector('.pe-notes').value.trim()});
+  });
+  return payload;
+}
+async function submitSetup(){
+  const btn=document.getElementById('btnNext');
+  btn.textContent='Initializing...';btn.disabled=true;
+  try{
+    const res=await fetch('/api/setup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(buildPayload())});
+    if(res.ok){window.location.replace('/?fresh='+Date.now())}
+    else{const err=await res.json();alert('Setup failed: '+(err.error||'Unknown'));btn.textContent='Initialize Butler 🎩';btn.disabled=false}
+  }catch(e){alert('Error: '+e.message);btn.textContent='Initialize Butler 🎩';btn.disabled=false}
+}
+initDays();initGrades();addCourse();addGoal();
+const fd=new Date();fd.setDate(fd.getDate()+35);
+document.getElementById('finals_date').value=fd.toISOString().split('T')[0];
+</script>
+</body>
+</html>
