@@ -40,6 +40,7 @@
 21. [Workspace contents](#21-workspace-contents)
 22. [FAQ for the owner](#22-faq-for-the-owner)
 23. [Glossary](#23-glossary)
+24. [Session log](#24-session-log)
 
 ---
 
@@ -175,7 +176,6 @@ All seven handoff files verified complete (non-empty, JSONs parse, message trees
 | **TTS latency** | 3–4 s to first audio; benchmarked cure not yet shipped |
 | **F4 toggle trap, F3 hardcoded STT model, F1 requirements drift** | Catalogued, unfixed on the laptop |
 | **F2, F5–F8** | Details only in the un-uploaded `INTAKE_SESSION3.md` |
-| **v3 rescue on real data** | Green banner never confirmed by the owner — his 12 tasks' fate unverified |
 | **18 Nov fixes** | Unfinished in a dead sandbox; nothing shipped |
 
 ---
@@ -398,7 +398,7 @@ JARVIS_ACCESS_TOKEN=       # empty → local dev (boot warning); REQUIRED before
 ```
 The commented `GEMINI_LIVE_MODEL` line in older templates is inert — models are chosen in Settings (roster dropdowns / Auto-pick), not in `.env`.
 
-**Keep `jarvis_academic.db` in the folder** until the green rescue banner confirms the 12 v3 tasks came home. Boot banner tells you the mode: `REAL mode — Gemini key present, SDK 3.3.0` vs `REHEARSAL mode`.
+Boot banner tells you the mode: `REAL mode — Gemini key present, SDK 3.3.0` vs `REHEARSAL mode`. *(Rescue retired 20 Nov — owner deleted the old DB; fresh start.)*
 
 **Kokoro model files** (`kokoro-v1.0.onnx`, `voices-v1.0.bin`) must sit where the server expects them (they're already on the laptop; the cloud script must provision them too).
 
@@ -567,7 +567,7 @@ README.md                         ← this file
 
 **Will voice cost money?** Your AI Studio Live quota is effectively unlimited (65K tokens/min; your peak used ≈6%). The 90-min/day cap is a guardrail you can raise. Text on 3.8 Flash is the scarce one (20 requests/day) — flash-lite gives 500. Kokoro TTS is local and free. Oracle's free tier covers the always-on box (10 TB egress/month).
 
-**What happened to my 12 old tasks?** The rescue migration is written, backup-first and tested on a copy — but only *you* can confirm it on the real data: look for the **green banner** on the dashboard. Keep `jarvis_academic.db` in the folder until you see it.
+**What happened to my 12 old tasks?** Retired question (20 Nov): you deleted the old database and chose a fresh start. The rescue migration stays in the code as a safety net, but there is nothing left to rescue.
 
 **Why do sessions keep dying mid-work?** Free-tier usage limits. The countermeasure is now protocol: docs-first, small shippable increments, and this consolidated record so any new instance resumes in minutes, not hours.
 
@@ -606,3 +606,94 @@ README.md                         ← this file
 ---
 
 *Built with truth before voice. 🎩 The butler's voice will be heard.*
+
+---
+
+## 24. Session log
+
+### 20 Nov 2026 — Phase 0 · Step 0 executed (intake, staging, verification — **zero code changes**)
+
+**Read first, per §13 kickoff:** `PROJECT_PLAN.md` §2.2 (two-branch problem) + §6 (Phase 0). Owner rule honoured: *ask for remaining files FIRST; never reconstruct; no code touched this session.* Time-boxed to five minutes.
+
+**Received & staged — 8 of the 15 Step-0 files.** `.txt` copies renamed to real filenames and staged into `butler/` (originals untouched in `uploads/`):
+
+| Staged as | Bytes | §2.2 Branch B expected | Verdict |
+|---|---|---|---|
+| `butler/server.py` | 36,936 | 36,936 | ✅ exact match |
+| `butler/database.py` | 101,513 | 101,513 | ✅ exact match |
+| `butler/registry.py` | 27,222 | 27,222 | ✅ exact match |
+| `butler/assembler.py` | 13,524 | 13,524 | ✅ exact match |
+| `butler/static/hud.html` | 116,334 | 116,334 | ✅ exact match |
+| `butler/static/setup.html` | 29,127 | 29,127 | ✅ exact match |
+| `butler/static/dashboard.html` | 9,677 | 9,677 | ✅ exact match |
+| `butler/requirements.txt` | 1,045 | 183 | ⚠️ **mismatch — see new finding below** |
+
+**Version markers verified (Branch B confirmed, not Branch A):**
+- `server.py`: **0** hits for `v1beta`/`http_options` → Live fix absent, exactly as §2.2 documents. `/api/tts/voices` L661 · `/api/tts` L714 · `/api/stt` L738, and **`await req.form()` at exactly L743** — line-for-line match with the owner's STT-500 traceback. F3 confirmed at L764: STT model hardcoded as a `("gemini-2.5-flash-lite", "gemini-2.5-flash")` tuple — still guessed IDs, still not roster-driven.
+- `hud.html`: `jarvis_local_voice` ×2 + `Auto-pick` ×3 → Branch B HUD **with** the model-hotfix markers. Local TTS selector present.
+- `registry.py`: `ToolSpec` class L59, `register_all()` L286; 29 spec-pattern hits ≈ 28 registrations + 1 factory (exact count to be confirmed at build time via `register_all()`).
+- All four staged `.py` files parse clean (`py_compile`). No sandbox DB created, no imports executed, nothing shipped.
+
+**🆕 New finding (not in the plan):** the uploaded `requirements.txt` (1,045 B, 59 pins) is **a pip freeze, not the 183 B project requirements file**. It *does* carry the voice-stack pins F1 needs (`kokoro-onnx==0.6.1`, `soundfile==0.14.0`, `edge-tts==7.3.1`, `onnxruntime==1.32.0`, `numpy==2.5.5`, `phonemizer==3.6.0`, `espeakng-loader==0.2.4`, `google-genai==3.3.0`) — so it doubles as the `pip_freeze.txt` evidence for re-pinning — but **`python-multipart` is still absent**, confirming blocker #1 is alive on the laptop. Treated as freeze evidence only; the real `requirements.txt` has been re-requested.
+
+**Still missing — requested from the owner before ANY code edit (§0 rule):**
+- Code (7): `session_manager.py` · `text_stream.py` · `models.py` · `tools.py` · `calculators.py` · `.env.example` (never the real `.env`) · the real 183 B `requirements.txt` (+ `pip_freeze.txt` if today's upload wasn't it).
+- Docs: `INTAKE_SESSION3.md` (holds F2/F5–F8) · `FILE_INDEX.md` · session-3 `JARVIS_CONTEXT.md` (28,256 B version) · `DEPLOY.md` + `deploy/setup-oracle.sh` · the 16 Nov live-fix zip if still on disk (optional — the v1beta port is 2 surgical edits, §5.2, and can be re-applied without it).
+
+**Owner actions handed over this session:**
+1. **Step 1 one-command unblock** (safe to run before any build): `cd ~/Downloads/Butler3.0 && source venv/bin/activate && pip install python-multipart`, restart uvicorn. The mic should get past the 500; the *next* error being webm-related is **progress, not regression** (blocker #2, fixed in the Step-2 build).
+2. **OD1–OD4 asked and ANSWERED by the owner this session (20 Nov):**
+   - **OD1 → Kokoro only for now.** ⚠️ **Scope change vs §6:** the v1beta Live port (Step 2 item 4) is **deferred by owner decision** — Phase 0 builds the Kokoro pipeline fixes only (STT multipart + webm→WAV + roster-driven model · TTS threads=1/maxph≈40/streaming · F4 toggle · complete requirements · F2/F5–F8 recovery). Gemini Live stays as-is (broken door, documented) until a later phase; the "Live ✅" line in the Phase-0 exit criteria is deferred with it. The 404 self-heal stays. `session_manager.py` is still an essential upload (persona, rehearsal, watchdog live there).
+   - **OD2 → flash-lite** for the test week (500 RPD). Matches the current build's preference — no change needed.
+   - **OD3 → BBA 6th semester** (owner-confirmed today; supersedes the audit's "he said 5th" note). The G3 profile row will be set to 6th in the Step-2 build — a data row, not a code edit.
+   - **OD4 → SUPERSEDED (later 20 Nov):** owner deleted the old DB entirely — fresh start; rescue question retired. See the sessions 2–3 log below.
+   - **Files → "only some — I'll list them."** Owner will attach what he has and name the gaps; the build plans around the gaps (if `INTAKE_SESSION3.md` is gone, F2/F5–F8 get re-audited in Phase 0 per §6 Step 2.6).
+
+**Not done (honestly blocked):** Step 2 consolidated build (needs the missing code files), Steps 3–4 laptop verification + M3 exit test (need his machine and key — real Gemini audio has never run from a sandbox and no claim is made). **No code was changed; no zip was produced.**
+
+**Next session:** on file arrival → version-check the newcomers (flash-lite preference in `models`, `thought_signature` in `text_stream`, 28-tool handlers, persona in `session_manager`) → execute the **owner-amended Step 2** (Kokoro-only scope) as ONE consolidated build on the Branch B base → ship zip with exact replace-list **and** refreshed context/index in the same delivery (the 18 Nov lesson).
+
+
+### 20 Nov 2026 (sessions 2–3) — full intake, the setup-loop hunt, root cause found & fixed
+
+**Intake complete.** The last 5 code files staged and verified — `models.py` 4,112 B · `session_manager.py` 31,842 B · `text_stream.py` 6,399 B · `tools.py` 12,859 B · `calculators.py` 17,997 B — all exact Branch B sizes, all parse clean. **13 of 15 essentials now present** (only `.env.example` outstanding; owner confirms `.env` exists on the laptop). `index.html` (10,427 B) uploaded and staged to `butler/static/` — later **exonerated** by the owner's A/B test. GitHub repo checked: still private (404); folder structure not visible (tip: `git ls-files > filelist.txt` and upload that).
+
+**Owner decisions locked this session:** the 59-pin freeze **is** the canonical `requirements.txt` (old 183 B file deleted as outdated) · `python-multipart` installed on the laptop · legacy context/index/intake files will **never** be re-uploaded (plan + README are the record) · **Kokoro-only, Live to be stubbed** · **UI redesign ordered** (keep the feel + every option) · old DB deleted → **rescue/OD4 retired** · goals: bugs · memory · UI · model structure · tool calls.
+
+**The hunt (empirical, sandbox, stdlib-only — no installs):** replicated the exact `/api/setup` SQL on a fresh DB → flag **and** data persist on first run and on retry; wizard JS has no form-submit trap; deleted-DB-with-WAL simulation → flag persists. **DB layer and wizard code proven innocent.** Owner's laptop A/B tests then isolated it: index.html irrelevant; after a fresh setup, **data and flag DO persist** and the HUD appears on a manual reload — only the Initialize redirect misbehaved.
+
+**Root cause: heuristic browser caching of the dynamic `/` route.** `FileResponse` sends `Last-Modified`/`ETag` but no `Cache-Control`, so after Initialize the wizard's `location.href='/'` was served **from cache** (stale setup.html) without asking the server. A manual reload revalidates → HUD. **Nothing was ever lost from the database.**
+
+**Fixes shipped (staged in `butler/`, Branch B base):**
+1. `server.py` — `/` now sends **`Cache-Control: no-store`**; wizard-vs-HUD decided fresh on every hit.
+2. `static/setup.html` — on success: **`location.replace('/?fresh='+Date.now())`** (cache-busted URL; wizard removed from history).
+3. `server.py` — **first-run auth exemption**: `/api/setup` allowed without a token *only while setup is incomplete* (the wizard sends none; prevents a cloud first-run lockout). Disclosed out-of-file repair.
+4. `requirements.txt` — **`python-multipart` appended** (unpinned — pin after `pip show python-multipart`).
+
+**Docs:** plan got the 20 Nov amendments block; OD4/rescue lines removed (blocker #10, risk row, Step 3.1, exit criteria, §12); Step 0 legacy-doc requests retired; Step 2 Live port deferred + UI-redesign item added. README rescue instructions removed (§3, §13, §22 FAQ).
+
+**Replace-list for the laptop:** `server.py` · `static/setup.html` · `requirements.txt` → restart uvicorn → (optionally delete `butler.db` for a fresh wizard) → **Initialize should land directly on the Night Desk HUD — no reload needed.** Verification status: edits parse-checked in sandbox; laptop re-test pending (owner).
+
+**Queued for the next consolidated build** (cannot fit 4-minute sessions): Live stub + HUD redesign (feel + options preserved) · webm→WAV for STT · roster-driven STT model (F3) · TTS threads=1 / maxph≈40 / streaming · F4 toggle · F2/F5–F8 re-audit · memory pass · `models.py` structure redesign · tool-call adjustment pass.
+
+**Open questions for the owner:** (1) `pip show python-multipart` version for pinning; (2) does "redesign the model structure" mean `models.py` (roster/selection) — confirm; (3) make the repo public or upload a `git ls-files` listing so the folder structure is visible.
+
+### 20 Nov 2026 (session 4) — owner strategy questions: Kokoro STT? go mobile now?
+
+**Received:** the `git ls-files` folder listing (structure now visible: root code files ✅, `static/` with `hud(deprecated).html` kept aside, an obsolete `jarvis_v4_item11/` extraction, `backups/`, `diagnose_live.py`, `.env.example` present — so only the Kokoro model files + DBs are gitignored, as expected). UI scope refined by owner: **voice page stays exactly as-is**; other panels get a margins/fit polish (no empty spaces, no long thin columns) — CSS-only, queued.
+
+**Owner Q1: "Doesn't Kokoro provide local STT?"** — Answered: **no.** Kokoro-82M is TTS-only (a voice box, no ears). STT needs a separate engine. Key reassurance re: his Android dependency concern — the **thin-shell architecture (D2/D3) means Python deps never enter the APK**; STT/TTS live on the brain box. Options presented: (a) **browser speech recognition** — zero new deps, already half-wired in the HUD's rehearsal path, works on phone Chrome (desktop Chrome uses Google's recognizer, needs internet); (b) **faster-whisper** — truly local, one pip install on laptop/cloud, best offline Urdu, nothing on the phone; (c) both with a config switch.
+
+**Owner Q2: "Drop everything and start the mobile app?"** — Agent advice (honest, logged): **not straight to the APK.** The APK is a thin remote for an always-on brain — built now it points at a sleeping laptop with broken voice input. Recommended: finish voice (one session) → **phone browser via Tailscale** (the plan's own middle step; HUD is already mobile-responsive; gives "Jarvis in the pocket" in a day) → cloud (Phase 1, script ready) → Kotlin APK (M7). Alternative fast-win offered: phone browser FIRST (text on phone today), voice right after. Decision surfaced to owner via two questions — **not silently decided** (protocol §9.2).
+
+**State of the build:** no code changed this turn (advisory). The session-3 setup-loop fix (`server.py`, `static/setup.html`, `requirements.txt` in `butler/`) still awaits owner install/confirmation. Local-STT implementation and the non-voice-panel CSS polish are scoped but **not started** — pending the owner's route + engine choices below.
+
+### 20 Nov 2026 (session 4, DECISIONS) — owner charts the course: CLOUD-FIRST, standalone app
+
+- **D10 (owner — supersedes "real voice on laptop FIRST"):** **No laptop hosting for the phone.** One standalone always-on brain in the cloud (Oracle, D1) with **one shared database**; the laptop HUD and the phone both connect to it — sync by design, not by file copies. The owner's "database in my Drive" variant was gently declined: SQLite on a synced drive corrupts under two writers and exposes no API; the cloud DB is the robust form of the same wish. His feature list (easy UI, hands-free + text, reminders/notifications, access to his apps, "feels realistic") maps to: phone-browser stage → M4 proactive engine → M7 APK (native notifications, wake word, app intents, offline cache).
+- **Route reordered:** **Phase 1 (cloud) is NEXT** → the voice fixes fold into the cloud build (they're server-side anyway) → phone browser on cloud HTTPS = Jarvis in the pocket → M4 reminders brain → M7 native APK.
+- **D8 (engine choice delegated to agent by owner — disclosed):** STT = **browser speech recognition by default** (zero new dependencies, already half-wired in the HUD, works on phone Chrome); **faster-whisper as an optional Settings switch** later if truly-offline ears are wanted. Nothing Python ever installs on the phone (thin shell).
+- **D9 (owner):** the voice must be **"cute, cheerful, exciting — makes me want to listen."** Plan: audition Kokoro's bright voices via the existing Local TTS selector (`af_bella`, `af_nova`, `af_heart`; `am_puck` for a playful male); the owner's pick becomes the default; edge-tts cheerful fallback (Jenny/Aria) if Kokoro's palette doesn't delight.
+- **Owner homework (the critical path — starts now, in parallel):** Oracle Cloud **Always Free** signup (email + card for identity verification; Always Free resources don't charge) → create an **ARM Ampere VM: Ubuntu 24.04, 2 OCPU / 12 GB**. Capacity can be scarce in popular regions — retry, or the ~$4 VPS fallback runs the same script. Step-by-step guidance next session.
+- **Agent next session:** build the **deploy kit** — the filelist confirms it is NOT in his folder (`DEPLOY.md` / `deploy/` absent; the record referenced it but it never shipped): `DEPLOY.md` + `deploy/setup-oracle.sh` (Caddy auto-HTTPS, systemd service, token generation, nightly backup cron) **plus the voice fixes** (browser-STT wiring + F4 toggle truthfulness, TTS latency knobs, cheerful voice default) so the cloud box **arrives talking**. Exact upload/replace list ships with it.
+- No code changed this turn (decisions + docs only). Setup-loop fix still awaiting owner install confirmation.
