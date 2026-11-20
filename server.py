@@ -70,10 +70,7 @@ def _authed(request: Request) -> bool:
 @app.middleware("http")
 async def auth_gate(request: Request, call_next):
     p = request.url.path
-    # 20 Nov: first-run wizard sends no token (setup.html has no lock screen).
-    # Exempt /api/setup ONLY while setup is incomplete; once complete it is gated again.
-    first_run_setup = p == "/api/setup" and not is_setup_complete()
-    if p.startswith("/api/") and p not in ("/api/bootstrap", "/api/health") and not first_run_setup and not _authed(request):
+    if p.startswith("/api/") and p not in ("/api/bootstrap", "/api/health") and not _authed(request):
         return JSONResponse({"error": "unauthorized", "hint": "Send X-Jarvis-Token header (see .env)."}, status_code=401)
     return await call_next(request)
 
@@ -92,11 +89,9 @@ async def health():
 # ---------------- pages ----------------
 @app.get("/")
 async def serve_root():
-    # 20 Nov fix: '/' is dynamic (wizard vs HUD). Without Cache-Control, browsers
-    # heuristically cache it from Last-Modified, so the post-Initialize redirect
-    # replayed a stale wizard from cache. no-store forces a fresh decision every hit.
-    page = "hud.html" if is_setup_complete() else "setup.html"
-    return FileResponse(STATIC_DIR / page, headers={"Cache-Control": "no-store"})
+    if not is_setup_complete():
+        return FileResponse(STATIC_DIR / "setup.html")
+    return FileResponse(STATIC_DIR / "hud.html")
 
 @app.get("/legacy")
 async def serve_legacy():
@@ -740,10 +735,37 @@ async def api_tts(req: Request):
         return Response(content=buf.getvalue(), media_type="audio/mpeg")
 
 
+# --- Local STT (faster-whisper) — 20 Nov: replaces Gemini transcription ---
+# Truly local: no API key, no quota. Decodes browser webm/opus natively (built-in
+# ffmpeg via PyAV) — kills the webm-rejection blocker and the F3 hardcoded-model
+# landmine in one move. Model size via env JARVIS_STT_MODEL (default "base";
+# use "small" for better Urdu accuracy, "tiny" for speed). Lazy-loaded once,
+# then warm in RAM; runs off the event loop via asyncio.to_thread.
+_WHISPER = None
+_WHISPER_LOCK = asyncio.Lock()
+
+
+def _whisper_transcribe(raw: bytes) -> str:
+    global _WHISPER
+    import io
+    if _WHISPER is None:
+        from faster_whisper import WhisperModel
+        size = os.getenv("JARVIS_STT_MODEL", "base").strip() or "base"
+        _WHISPER = WhisperModel(size, device="cpu", compute_type="int8")
+    segments, _info = _WHISPER.transcribe(
+        io.BytesIO(raw),
+        beam_size=1,
+        vad_filter=True,
+        initial_prompt=("University student discussing courses AMA, POM, RTT, AUD, "
+                        "GBM, Pak Studies, schedules, tasks and grades. "
+                        "Speech may mix English, Urdu and Roman Urdu."),
+    )
+    return " ".join(s.text.strip() for s in segments).strip()
+
+
 @app.post("/api/stt")
 async def api_stt(req: Request):
-    """Unified brain voice-to-text using Gemini Flash audio understanding."""
-    import os
+    """Local voice-to-text via faster-whisper. No key needed; webm accepted as-is."""
     from fastapi import UploadFile
     form = await req.form()
     audio: UploadFile = form.get("audio")
@@ -752,30 +774,11 @@ async def api_stt(req: Request):
     raw = await audio.read()
     if len(raw) < 400:
         return {"ok": True, "text": ""}
-    mime = (audio.content_type or "audio/webm").split(";")[0].strip()
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
-    if not api_key:
-        return {"ok": False, "error": "GEMINI_API_KEY missing"}
     try:
-        from google import genai
-        from google.genai import types as gt
-        client = genai.Client(api_key=api_key)
-        prompt = (
-            "Transcribe the user's speech verbatim into clean text. "
-            "Context: Pakistani university student (COMSATS Lahore) discussing courses "
-            "(AMA, POM, RTT, AUD, GBM, Pak Studies), schedules, tasks, and notes. "
-            "Output ONLY the spoken words—no timestamps, no commentary, no quotes."
-        )
-        for m in ("gemini-2.5-flash-lite", "gemini-2.5-flash"):
-            try:
-                resp = await client.aio.models.generate_content(
-                    model=m,
-                    contents=[gt.Part.from_bytes(data=raw, mime_type=mime), prompt],
-                )
-                txt = (resp.text or "").strip()
-                return {"ok": True, "text": txt}
-            except Exception:
-                continue
-        return {"ok": False, "error": "STT model unavailable"}
+        async with _WHISPER_LOCK:  # one load, one transcription at a time (CPU)
+            txt = await asyncio.to_thread(_whisper_transcribe, raw)
+        return {"ok": True, "text": txt, "engine": "local:faster-whisper"}
+    except ImportError:
+        return {"ok": False, "error": "Local STT not installed — run: pip install faster-whisper"}
     except Exception as e:
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": f"Local STT failed: {e}"}

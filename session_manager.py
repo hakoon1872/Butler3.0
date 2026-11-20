@@ -26,6 +26,12 @@ except Exception:                                    # pragma: no cover
 
 STATES = ["IDLE", "CONNECTING", "LIVE", "GOAWAY", "RESUMING", "CLOSING"]
 
+# 20 Nov (session 6): Live API STUBBED by owner decision (OD1 — Kokoro-only).
+# One voice mode: mic → local Whisper STT → Gemini TEXT brain → text + Kokoro TTS.
+# To re-arm the Live door later, set JARVIS_ENABLE_LIVE=1 in .env (needs the v1beta port).
+import os as _os
+LIVE_ENABLED = _os.getenv("JARVIS_ENABLE_LIVE", "0").strip() == "1"
+
 PERSONA = (
     "You are Jarvis — a warm, gentle, uplifting, and natural personal companion. "
     "Speak naturally like a caring, sharp friend — warm, encouraging, and expressive, never stiff or robotic. "
@@ -130,6 +136,21 @@ class LiveSession:
              else "rehearsal-understudy", db.iso_utc(), db.iso_utc()))
         await self._set_state("CONNECTING", mode=self.mode, session_key=self.session_key)
         if self.mode == "real":
+            if not LIVE_ENABLED:
+                # Single voice mode (OD1): never dial Gemini Live. Ears = local Whisper
+                # (/api/stt), brain = Gemini text model (handle_text → text_stream),
+                # voice = local Kokoro (/api/tts). push_audio is a safe no-op here.
+                await self._set_state("LIVE", mode=self.mode,
+                                      note="Single voice mode: local ears · one Gemini text brain · local Kokoro voice. Live API parked.")
+                await self._send({"type": "transcript", "role": "system",
+                                  "text": "Voice ready, sir — speak or type. Local ears, one brain, local voice."})
+                self.connected_at = time.monotonic()
+                self._timer_task = asyncio.create_task(self._watchdog())
+                await self._send({"type": "hello", "mode": self.mode,
+                                  "voice": _cfg("voice_name", "Aoede"),
+                                  "cap_mins": int(_cfg("live_minute_cap", "90")),
+                                  "idle_secs": int(_cfg("session_idle_close_secs", "120"))})
+                return
             try:
                 await self._connect(resume=False)
             except Exception as exc:

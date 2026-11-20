@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1740,7 +1741,7 @@ function renderMode() {
   b.textContent = S.mode === "real" ? "LIVE · Gemini" : "rehearsal";
   b.className = "badge " + (S.mode === "real" ? "real" : "rehearsal");
   b.title = S.mode === "real" ? "Connected to Gemini Live with your key" : "No API key — local understudy, real tools. Add GEMINI_API_KEY to .env.";
-  $("#tgBrowserVoice").style.display = S.mode === "rehearsal" ? "" : "none";
+  $("#tgBrowserVoice").style.display = "";  // F4 fix: toggle always visible — it gates local TTS in every mode
 }
 function renderMachine() {
   const M = $("#machine"); M.innerHTML = "";
